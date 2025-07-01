@@ -1,0 +1,119 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+env:
+  CI: "true"  
+  NODE_OPTIONS: --max-old-space-size=4096
+
+jobs:
+  build-backend:
+    name: Compile and test backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    
+    strategy:
+      matrix:
+        node-version: [20.18.3]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Debug paths
+      run: |
+        echo "Current directory: $(pwd)"
+        ls -R
+    
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: 'backend/package-lock.json'
+
+    - name: Install dependencies
+      run: |
+        npm ci
+        
+    - name: Display versions
+      run: |
+        echo "Node version: $(node --version)"
+        echo "NPM version: $(npm --version)"
+        echo "Hardhat version: $(npx hardhat --version)"
+      
+    - name: Compile contracts
+      run: npx hardhat compile
+      
+    - name: Run tests with coverage 
+      run: |
+         npx hardhat coverage
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./backend/coverage/lcov.info
+        flags: backend
+        name: backend-coverage
+        fail_ci_if_error: false
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: backend/coverage/
+    
+  build-front:
+    name: Build frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+    
+    strategy:
+      matrix:
+        node-version: [20.18.3]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: 'frontend/package-lock.json'
+   
+    - name: Cache frontend dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.npm
+          frontend/node_modules
+          frontend/.next/cache  
+        key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/package-lock.json') }}
+
+    - name: Install dependencies
+      run: |
+        npm ci
+        
+    - name: Build frontend
+      run: |
+        npm run build  
+    - name: Upload frontend build
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-build
+        path: frontend/dist/
