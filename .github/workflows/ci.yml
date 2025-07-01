@@ -2,12 +2,12 @@ name: Intégration - Mon Cercle Santé
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
     paths:
       - 'backend/**'
       - 'frontend/**'
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
     paths:
       - 'backend/**'
       - 'frontend/**'
