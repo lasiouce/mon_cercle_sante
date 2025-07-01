@@ -55,14 +55,6 @@ describe("MedicalConsentNFT", function () {
       expect(patientId).to.be.gt(0);
     });
 
-    it("Should retrieve the patient address from their ID", async function () {
-      const { consentContract, patient1 } = await deployConsentFixture();
-      await consentContract.connect(patient1).registerPatient();
-      const patientId = await consentContract.getPatientId(patient1.address);
-      const patientAddress = await consentContract.getPatientAddress(patientId);
-      expect(patientAddress).to.equal(patient1.address);
-    });
-
     it("Should retrieve patient information", async function () {
       const { consentContract, patient1 } = await deployConsentFixture();
       await consentContract.connect(patient1).registerPatient();
@@ -71,7 +63,8 @@ describe("MedicalConsentNFT", function () {
       
       expect(patientInfo[0]).to.equal(patient1.address); // walletAddress
       expect(patientInfo[1]).to.be.gt(0); // registrationDate
-      expect(patientInfo[2]).to.be.true; // active
+      expect(patientInfo[2]).to.be.true; // isActive
+      expect(patientInfo[3]).to.be.an('array'); // consentIds
     });
   });
 
@@ -121,12 +114,13 @@ describe("MedicalConsentNFT", function () {
       );
 
       // Verify that the consent was created
-      const patientConsents = await consentContract.getPatientConsents(patient1.address);
+      const patientId = await consentContract.getPatientId(patient1.address);
+      const patientConsents = await consentContract.getPatientConsents(patientId);
       expect(patientConsents.length).to.equal(1);
 
       // Verify that the consent is valid
       const tokenId = patientConsents[0];
-      const isValid = await consentContract.isConsentValid(tokenId);
+      const isValid = await consentContract.isConsentValid(tokenId, patientId);
       expect(isValid).to.be.true;
     });
 
@@ -152,17 +146,18 @@ describe("MedicalConsentNFT", function () {
         validityDuration
       );
 
-      const patientConsents = await consentContract.getPatientConsents(patient1.address);
+      const patientId = await consentContract.getPatientId(patient1.address);
+      const patientConsents = await consentContract.getPatientConsents(patientId);
       const tokenId = patientConsents[0];
       
-      await consentContract.connect(patient1).revokeConsent(tokenId);
+      await consentContract.connect(patient1).revokeConsent(tokenId, patientId);
       
       // Verify that the consent is no longer valid
-      const isValid = await consentContract.isConsentValid(tokenId);
+      const isValid = await consentContract.isConsentValid(tokenId, patientId);
       expect(isValid).to.be.false;
       
       // Verify that the consent has been removed from the patient's list
-      const updatedConsents = await consentContract.getPatientConsents(patient1.address);
+      const updatedConsents = await consentContract.getPatientConsents(patientId);
       expect(updatedConsents.length).to.equal(0);
     });
 
@@ -176,11 +171,12 @@ describe("MedicalConsentNFT", function () {
         validityDuration
       );
 
-      const patientConsents = await consentContract.getPatientConsents(patient1.address);
+      const patientId = await consentContract.getPatientId(patient1.address);
+      const patientConsents = await consentContract.getPatientConsents(patientId);
       const tokenId = patientConsents[0];
       
       // Patient2 tries to revoke patient1's consent
-      await expect(consentContract.connect(patient2).revokeConsent(tokenId))
+      await expect(consentContract.connect(patient2).revokeConsent(tokenId, patientId))
         .to.be.revertedWith("Seul le proprietaire peut revoquer");
     });
 
@@ -194,9 +190,10 @@ describe("MedicalConsentNFT", function () {
         validityDuration
       );
 
-      const patientConsents = await consentContract.getPatientConsents(patient1.address);
+      const patientId = await consentContract.getPatientId(patient1.address);
+      const patientConsents = await consentContract.getPatientConsents(patientId);
       const tokenId = patientConsents[0];
-      const consentDetails = await consentContract.getConsentDetails(tokenId);
+      const consentDetails = await consentContract.getConsentDetails(tokenId, patientId);
       expect(consentDetails.datasetHash).to.equal(datasetHash);
       expect(consentDetails.studyId).to.equal(studyId);
       expect(consentDetails.isActive).to.be.true;
@@ -234,7 +231,8 @@ describe("MedicalConsentNFT", function () {
       );
       
       // Verify that the consent was created
-      const patientConsents = await consentContract.getPatientConsents(patient1.address);
+      const patientId = await consentContract.getPatientId(patient1.address);
+      const patientConsents = await consentContract.getPatientConsents(patientId);
       expect(patientConsents.length).to.equal(1);
     });
 

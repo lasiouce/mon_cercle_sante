@@ -11,40 +11,41 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 /// @author lasiouce (https://github.com/lasiouce)  
 /// @notice This contract manages medical consent as NFTs for patients participating in medical studies
 /// @dev Implements ERC721 standard with additional functionality for consent management
-contract MedicalConsentNFT is ERC721, ERC721Burnable, Ownable, Pausable, ReentrancyGuard {
+contract MedicalConsentNFT is ERC721, ERC721Burnable, Ownable, Pausable {
     
     /// @notice Structure to store consent data
     /// @dev Contains all relevant information about a specific consent
     struct ConsentData {
+        uint256 consentId;        /// @notice Unique identifier for the consent
         bytes32 datasetHash;      /// @notice Hash of the dataset the consent applies to
         bytes32 studyId;          /// @notice Identifier of the study
         uint256 validUntil;       /// @notice Timestamp until which the consent is valid
         uint256 createdAt;        /// @notice Timestamp when the consent was created
+        uint256 revokedAt;        /// @notice Timestamp when the consent was revoked
         bool isActive;            /// @notice Flag indicating if the consent is currently active
     }
-    
-    /// @notice Maps wallet addresses to patient IDs
+
+    struct Patient {
+        address walletAddress;        // Adresse du portefeuille du patient
+        uint256 patientId;            // ID unique du patient
+        uint256 registrationDate;     // Date d'enregistrement
+        bool isActive;                // Statut actif/inactif
+        mapping(uint256 => ConsentData) consents;    // Consentements du patient
+        uint256[] consentIds;   // Identifiants des tokens de consentement du patient
+    }
+
+    /// @notice Maps patient IDs to Patient structures
+    mapping(uint256 => Patient) public patients;
+    /// @notice Mapping d'accès rapide par adresse
     mapping(address => uint256) public addressToPatientId;
-    /// @notice Maps patient IDs to wallet addresses
-    mapping(uint256 => address) public patientIdToAddress;
-    /// @notice Maps patient IDs to registration timestamps
-    mapping(uint256 => uint256) public patientRegistrationDate;
-    /// @notice Maps patient IDs to active status
-    mapping(uint256 => bool) public isPatientActive;
-    /// @notice Maps token IDs to consent data
-    mapping(uint256 => ConsentData) private _consents;
     /// @notice Maps study IDs to authorization status
     mapping(bytes32 => bool) private _authorizedStudies;
-    /// @notice Maps patient addresses to their token IDs
-    mapping(address => uint256[]) private _patientTokens;
-    /// @notice Maps token IDs to their index in the patient's token array
-    mapping(uint256 => uint256) private _tokenIndexInPatientArray;
     /// @notice Total number of active consent tokens
-    uint256 private _totalTokens;
+    uint256 private _totalConsents;
     /// @notice Next token ID to be assigned
-    uint256 private _nextTokenId;
+    uint256 private _nextConsentId;       
     /// @notice Next patient ID to be assigned
-    uint256 private _nextPatientId = 1;
+    uint256 private _nextPatientId;
     
     /// @notice Emitted when a patient is registered
     /// @param walletAddress The address of the patient's wallet
@@ -99,10 +100,14 @@ contract MedicalConsentNFT is ERC721, ERC721Burnable, Ownable, Pausable, Reentra
     function registerPatient() external {
         uint256 patientId = ++ _nextPatientId;
         require(!isPatientRegistered(msg.sender), "Adresse deja enregistree");
+
+        Patient storage newPatient = patients[patientId];
+        newPatient.walletAddress = msg.sender;
+        newPatient.patientId = patientId;
+        newPatient.registrationDate = block.timestamp;
+        newPatient.isActive = true;
+        newPatient.consentIds = new uint256[](0);  
         addressToPatientId[msg.sender] = patientId;
-        patientIdToAddress[patientId] = msg.sender;
-        patientRegistrationDate[patientId] = block.timestamp;
-        isPatientActive[patientId] = true;      
         emit PatientRegistered(msg.sender, patientId);
     }
     
@@ -111,7 +116,7 @@ contract MedicalConsentNFT is ERC721, ERC721Burnable, Ownable, Pausable, Reentra
     /// @return True if the address is registered and active, false otherwise
     function isPatientRegistered(address walletAddress) public view returns (bool) {
         uint256 patientId = addressToPatientId[walletAddress];
-        return patientId != uint256(0) && isPatientActive[patientId];
+        return patientId != uint256(0) && patients[patientId].isActive;
     }
     
     /// @notice Gets the patient ID associated with a wallet address
@@ -121,33 +126,28 @@ contract MedicalConsentNFT is ERC721, ERC721Burnable, Ownable, Pausable, Reentra
         require(isPatientRegistered(walletAddress), "Patient non enregistre");
         return addressToPatientId[walletAddress];
     }
-    
-    /// @notice Gets the wallet address associated with a patient ID
-    /// @param patientId The patient ID to query
-    /// @return The wallet address associated with the patient ID
-    function getPatientAddress(uint256 patientId) external view returns (address) {
-        address patientAddress = patientIdToAddress[patientId];
-        require(patientAddress != address(0), "PatientId inexistant");
-        return patientAddress;
-    }
-    
+
     /// @notice Gets the basic information of a patient
     /// @param patientId The ID of the patient to query
     /// @return walletAddress The wallet address of the patient
     /// @return registrationDate The timestamp when the patient was registered
-    /// @return active Whether the patient is active
+    /// @return isActive Whether the patient is active
+    /// @return consentTokenIds The IDs of the patient's consent tokens
     function getPatientInfo(uint256 patientId) external view returns (
         address walletAddress,
         uint256 registrationDate,
-        bool active
+        bool isActive,
+        uint256[] memory consentTokenIds
     ) {
-        require(patientIdToAddress[patientId] != address(0), "PatientId inexistant");
-        return (
-            patientIdToAddress[patientId],
-            patientRegistrationDate[patientId],
-            isPatientActive[patientId]
-        );
-    }
+    require(patientId!= uint256(0), "PatientId inexistant");
+    require(patients[patientId].walletAddress != address(0), "PatientId inexistant");
+    return (
+        patients[patientId].walletAddress,
+        patients[patientId].registrationDate,
+        patients[patientId].isActive,
+        patients[patientId].consentIds
+     );
+   }
     
     /// @notice Allows a patient to grant consent for a study
     /// @dev Creates a new NFT representing the consent
@@ -159,109 +159,93 @@ contract MedicalConsentNFT is ERC721, ERC721Burnable, Ownable, Pausable, Reentra
         bytes32 datasetHash,
         bytes32 studyId,
         uint256 validityDuration
-    ) external whenNotPaused onlyValidStudy(studyId) nonReentrant returns (uint256) {
+    ) external whenNotPaused onlyValidStudy(studyId) returns (uint256) {
         require(msg.sender != address(0), "Invalid patient address");
         require(datasetHash != bytes32(0), "Dataset hash required");
         require(validityDuration > 0, "Validity duration required");
         
         uint256 patientId = addressToPatientId[msg.sender];
+        require(patientId != 0, "Patient non enregistre");
+        uint256 consentId = _nextConsentId++;
         
-        uint256 tokenId = _nextTokenId++;
-        uint256 validUntil = block.timestamp + validityDuration;
-        require(!_exists(tokenId), "Token already exists");
-        
-        _consents[tokenId] = ConsentData({
+        patients[patientId].consents[consentId] = ConsentData({
+            consentId: consentId,
             datasetHash: datasetHash,
             studyId: studyId,
-            validUntil: validUntil,
+            validUntil: block.timestamp + validityDuration,
             createdAt: block.timestamp,
+            revokedAt: 0,
             isActive: true
         });
-        _safeMint(msg.sender, tokenId);
-        _addTokenToPatient(msg.sender, tokenId);
-        _totalTokens++;
-        emit ConsentGranted(tokenId, patientId, studyId, datasetHash, validUntil);
-        return tokenId;
+        patients[patientId].consentIds.push(consentId);
+        _safeMint(msg.sender, consentId);
+        ++ _totalConsents;
+        emit ConsentGranted(_nextConsentId++, patientId, studyId, datasetHash, block.timestamp + validityDuration);
+        return consentId;
     }
     
     /// @notice Allows a patient to revoke a previously granted consent
-    /// @param tokenId The ID of the consent token to revoke
-    function revokeConsent(uint256 tokenId) external nonReentrant {
-        require(ownerOf(tokenId) == msg.sender, "Seul le proprietaire peut revoquer");
-        
-        ConsentData storage consent = _consents[tokenId];
+    /// @param consentId The ID of the consent token to revoke
+    function revokeConsent(uint256 consentId, uint256 patientId) external {
+        require(ownerOf(consentId) == msg.sender, "Seul le proprietaire peut revoquer");
+        ConsentData storage consent = patients[patientId].consents[consentId];
         require(consent.isActive, "Consentement deja revoque");
-        
+
         consent.isActive = false;
-        address patientAddress = ownerOf(tokenId);
-        uint256 patientId = addressToPatientId[patientAddress];
-        bytes32 studyId = consent.studyId;
-        _removeTokenFromPatient(patientAddress, tokenId);
-        _burn(tokenId);
-        _totalTokens--;
-        emit ConsentRevoked(tokenId, patientId, studyId, block.timestamp);
+        consent.revokedAt = block.timestamp;
+
+        // Supprimer de la liste des IDs 
+        uint256[] storage consentIds = patients[patientId].consentIds;
+        for (uint256 i = 0; i < consentIds.length; i++) {
+            if (consentIds[i] == consentId) {
+            // Swap and pop pour économiser du gaz
+            consentIds[i] = consentIds[consentIds.length - 1];
+            consentIds.pop();
+            break;
+            }
+        }
+  
+        _burn(consentId);
+        -- _totalConsents;
+        emit ConsentRevoked(consentId, patientId, consent.studyId, block.timestamp);
     }
     
-    /// @notice Gets all consent tokens owned by a patient
-    /// @param patient The address of the patient
+    /// @notice Gets all consent tokens owned by a patientId
+    /// @param patientId The ID of the patient
     /// @return An array of token IDs owned by the patient
-    function getPatientConsents(address patient) external view returns (uint256[] memory) {
-        return _patientTokens[patient];
+    function getPatientConsents(uint256 patientId) external view returns (uint256[] memory) {
+        return patients[patientId].consentIds;
     }
     
     /// @notice Gets the number of consent tokens owned by a patient
-    /// @param patient The address of the patient
+    /// @param patientId The ID of the patient
     /// @return The number of consent tokens owned by the patient
-    function getPatientConsentCount(address patient) external view returns (uint256) {
-        return _patientTokens[patient].length;
+    function getPatientConsentCount(uint256 patientId) external view returns (uint256) {
+        return patients[patientId].consentIds.length;
     }
     
     /// @notice Gets the total number of active consent tokens
     /// @return The total number of active consent tokens
     function totalSupply() external view returns (uint256) {
-        return _totalTokens;
-    }
-    
-    /// @dev Adds a token to a patient's token array
-    /// @param patient The address of the patient
-    /// @param tokenId The ID of the token to add
-    function _addTokenToPatient(address patient, uint256 tokenId) private {
-        _tokenIndexInPatientArray[tokenId] = _patientTokens[patient].length;
-        _patientTokens[patient].push(tokenId);
-    }
-    
-    /// @dev Removes a token from a patient's token array
-    /// @param patient The address of the patient
-    /// @param tokenId The ID of the token to remove
-    function _removeTokenFromPatient(address patient, uint256 tokenId) private {
-        uint256[] storage tokens = _patientTokens[patient];
-        uint256 tokenIndex = _tokenIndexInPatientArray[tokenId];
-        uint256 lastTokenIndex = tokens.length - 1;
-        
-        if (tokenIndex != lastTokenIndex) {
-            uint256 lastTokenId = tokens[lastTokenIndex];
-            tokens[tokenIndex] = lastTokenId;
-            _tokenIndexInPatientArray[lastTokenId] = tokenIndex;
-        }
-        tokens.pop();
-        delete _tokenIndexInPatientArray[tokenId];
+        return _totalConsents;
     }
     
     /// @notice Checks if a consent token is valid
     /// @param tokenId The ID of the consent token to check
+    /// @param patientId The ID of the patient
     /// @return True if the consent is valid, false otherwise
-    function isConsentValid(uint256 tokenId) external view returns (bool) {
+    function isConsentValid(uint256 tokenId, uint256 patientId) external view returns (bool) {
         if (!_exists(tokenId)) return false;
-        ConsentData memory consent = _consents[tokenId];
+        ConsentData memory consent = patients[patientId].consents[tokenId];
         return consent.isActive && block.timestamp <= consent.validUntil;
     }
     
     /// @notice Gets the details of a consent token
     /// @param tokenId The ID of the consent token to query
     /// @return The consent data associated with the token
-    function getConsentDetails(uint256 tokenId) external view returns (ConsentData memory) {
+    function getConsentDetails(uint256 tokenId, uint256 patientId) external view returns (ConsentData memory) {
         require(_exists(tokenId), "Token inexistant");
-        return _consents[tokenId];
+        return patients[patientId].consents[tokenId];
     }
     
     /// @notice Authorizes a study to collect consents
