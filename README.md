@@ -1,4 +1,9 @@
-### MedicalConsentNFT Contract (Consent.sol)
+# Mon Cercle Sante
+## Table des matières
+* [Gestion de consentements médicaux](#gestion-de-consentements-medicaux)
+* [Génération points fidélités](#cercle-token--points-de-fidelite)
+
+## Gestion de consentements médicaux
 
 Le contrat `MedicalConsentNFT` est un contrat de gestion de consentements médicaux basé sur les NFTs (ERC721). Il permet aux patients d'accorder et de révoquer leur consentement pour l'utilisation de leurs données médicales dans des études spécifiques.
 
@@ -25,3 +30,7 @@ Le contrat `MedicalConsentNFT` est un contrat de gestion de consentements médic
 ##### Administration du contrat
 - `pause()` : Permet au propriétaire de mettre en pause le contrat (arrête les nouvelles attributions de consentement).
 - `unpause()` : Permet au propriétaire de réactiver le contrat après une pause.
+
+## Cercle Token : points de fidélités
+
+Token récompenseant les patients pour leurs contributions et engagement.
