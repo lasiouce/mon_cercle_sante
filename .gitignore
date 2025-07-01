@@ -1,19 +1,19 @@
-node_modules
+backend/node_modules
 .env
 .vscode
 
 # Hardhat files
-/cache
-/artifacts
-/bin
+backend/cache
+backend/artifacts
+backend/bin
 
 # TypeChain files
-/typechain
-/typechain-types
+backend/typechain
+backend/typechain-types
 
 # solidity-coverage files
-/coverage
-/coverage.json
+backend/coverage
+backend/coverage.json
 
 # Hardhat Ignition default folder for deployments against a local node
-ignition/deployments/chain-31337
+backend/ignition/deployments/chain-31337
