@@ -1,7 +1,7 @@
 # Mon Cercle Sante
 ## Table des matières
-* [Gestion de consentements médicaux](#gestion-de-consentements-medicaux)
-* [Génération points fidélités](#cercle-token--points-de-fidelite)
+* [Gestion de consentements médicaux](#gestion-de-consentements-médicaux)
+* [Génération points fidélités](#cercle-token--points-de-fidélités)
 
 ## Gestion de consentements médicaux
 
