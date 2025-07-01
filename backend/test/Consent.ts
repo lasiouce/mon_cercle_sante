@@ -12,45 +12,51 @@ describe("MedicalConsentNFT", function () {
   let studyName: string;
   let datasetHash: string;
 
-  beforeEach(async function () {
+  async function deployConsentFixture() {
     // Contract deployment
     const signers = await ethers.getSigners();
-    owner = signers[0];
-    patient1 = signers[1];
-    patient2 = signers[2];
+    const owner = signers[0];
+    const patient1 = signers[1];
+    const patient2 = signers[2];
 
     const ConsentFactory = await ethers.getContractFactory("MedicalConsentNFT");
-    consentContract = await ConsentFactory.deploy(owner.address) as MedicalConsentNFT;
+    const consentContract = await ConsentFactory.deploy(owner.address) as MedicalConsentNFT;
 
     // Test data preparation
-    studyId = ethers.keccak256(ethers.toUtf8Bytes("Study1"));
-    studyName = "Clinical study on diabetes";
-    datasetHash = ethers.keccak256(ethers.toUtf8Bytes("PatientData1"));
+    const studyId = ethers.keccak256(ethers.toUtf8Bytes("Study1"));
+    const studyName = "Clinical study on diabetes";
+    const datasetHash = ethers.keccak256(ethers.toUtf8Bytes("PatientData1"));
 
     // Authorize the study
     await consentContract.authorizeStudy(studyId, studyName);
-  });
+
+    return { consentContract, owner, patient1, patient2, studyId, studyName, datasetHash };
+  }
 
   describe("Patient management", function () {
     it("Should allow a user to register as a patient", async function () {
+      const { consentContract, patient1 } = await deployConsentFixture();
       await consentContract.connect(patient1).registerPatient();
       const isRegistered = await consentContract.isPatientRegistered(patient1.address);
       expect(isRegistered).to.be.true;
     });
 
     it("Should not allow a patient to register twice", async function () {
+      const { consentContract, patient1 } = await deployConsentFixture();
       await consentContract.connect(patient1).registerPatient();
       await expect(consentContract.connect(patient1).registerPatient())
         .to.be.revertedWith("Adresse deja enregistree");
     });
 
     it("Should retrieve the patient ID from their address", async function () {
+      const { consentContract, patient1 } = await deployConsentFixture();
       await consentContract.connect(patient1).registerPatient();
       const patientId = await consentContract.getPatientId(patient1.address);
       expect(patientId).to.be.gt(0);
     });
 
     it("Should retrieve the patient address from their ID", async function () {
+      const { consentContract, patient1 } = await deployConsentFixture();
       await consentContract.connect(patient1).registerPatient();
       const patientId = await consentContract.getPatientId(patient1.address);
       const patientAddress = await consentContract.getPatientAddress(patientId);
@@ -58,6 +64,7 @@ describe("MedicalConsentNFT", function () {
     });
 
     it("Should retrieve patient information", async function () {
+      const { consentContract, patient1 } = await deployConsentFixture();
       await consentContract.connect(patient1).registerPatient();
       const patientId = await consentContract.getPatientId(patient1.address);
       const patientInfo = await consentContract.getPatientInfo(patientId);
@@ -70,6 +77,7 @@ describe("MedicalConsentNFT", function () {
 
   describe("Study management", function () {
     it("Should authorize a study by the owner", async function () {
+      const { consentContract, owner } = await deployConsentFixture();
       const newStudyId = ethers.keccak256(ethers.toUtf8Bytes("Study2"));
       const newStudyName = "Study on hypertension";
       
@@ -79,6 +87,7 @@ describe("MedicalConsentNFT", function () {
     });
 
     it("Should not authorize a study by a non-owner", async function () {
+      const { consentContract, patient1 } = await deployConsentFixture();
       const newStudyId = ethers.keccak256(ethers.toUtf8Bytes("Study3"));
       const newStudyName = "Unauthorized study";
       
@@ -87,6 +96,7 @@ describe("MedicalConsentNFT", function () {
     });
 
     it("Should revoke a study authorization", async function () {
+      const { consentContract, owner, studyId, studyName } = await deployConsentFixture();
       await consentContract.connect(owner).revokeStudyAuthorization(studyId, studyName);
       const isAuthorized = await consentContract.isStudyAuthorized(studyId);
       expect(isAuthorized).to.be.false;
@@ -94,12 +104,14 @@ describe("MedicalConsentNFT", function () {
   });
 
   describe("Consent management", function () {
-    beforeEach(async function () {
-      // Register the patient
-      await consentContract.connect(patient1).registerPatient();
-    });
+     async function deployConsentWithRegisteredPatientFixture() {
+      const baseFixture = await deployConsentFixture();
+      await baseFixture.consentContract.connect(baseFixture.patient1).registerPatient();
+      return baseFixture;
+    }
 
     it("Should allow a patient to grant consent", async function () {
+      const { consentContract, patient1, datasetHash, studyId } = await deployConsentWithRegisteredPatientFixture();
       const validityDuration = 60 * 60 * 24 * 30; // 30 days in seconds
       
       const tx = await consentContract.connect(patient1).selfGrantConsent(
@@ -119,6 +131,7 @@ describe("MedicalConsentNFT", function () {
     });
 
     it("Should not allow granting consent for an unauthorized study", async function () {
+      const { consentContract, patient1, datasetHash } = await deployConsentWithRegisteredPatientFixture();
       const invalidStudyId = ethers.keccak256(ethers.toUtf8Bytes("InvalidStudy"));
       const validityDuration = 60 * 60 * 24 * 30; // 30 days in seconds
       
@@ -130,6 +143,7 @@ describe("MedicalConsentNFT", function () {
     });
 
     it("Should allow a patient to revoke their consent", async function () {
+      const { consentContract, patient1, datasetHash, studyId } = await deployConsentWithRegisteredPatientFixture();
       const validityDuration = 60 * 60 * 24 * 30; // 30 days in seconds
       
       await consentContract.connect(patient1).selfGrantConsent(
@@ -153,6 +167,7 @@ describe("MedicalConsentNFT", function () {
     });
 
     it("Should not allow a non-owner to revoke a consent", async function () {
+      const { consentContract, patient1, patient2, datasetHash, studyId } = await deployConsentWithRegisteredPatientFixture();
       const validityDuration = 60 * 60 * 24 * 30; // 30 days in seconds
       
       await consentContract.connect(patient1).selfGrantConsent(
@@ -170,6 +185,7 @@ describe("MedicalConsentNFT", function () {
     });
 
     it("Should retrieve consent details", async function () {
+      const { consentContract, patient1, datasetHash, studyId } = await deployConsentWithRegisteredPatientFixture();
       const validityDuration = 60 * 60 * 24 * 30; // 30 days in seconds
       
       await consentContract.connect(patient1).selfGrantConsent(
@@ -189,9 +205,9 @@ describe("MedicalConsentNFT", function () {
 
   describe("Administrative features", function () {
     it("Should allow the owner to pause the contract", async function () {     
+      const { consentContract, owner, patient1, datasetHash, studyId } = await deployConsentFixture();
       // Register a patient
       await consentContract.connect(patient1).registerPatient();
-      
       // Try to grant consent while the contract is paused
       const validityDuration = 60 * 60 * 24 * 30; // 30 days in seconds
       await consentContract.connect(owner).pause();
@@ -203,12 +219,9 @@ describe("MedicalConsentNFT", function () {
     });
 
     it("Should allow the owner to unpause the contract after a pause", async function () {
-      // Pause
+      const { consentContract, owner, patient1, datasetHash, studyId } = await deployConsentFixture();
       await consentContract.connect(owner).pause();
-      
-      // Unpause
       await consentContract.connect(owner).unpause();
-      
       // Register a patient
       await consentContract.connect(patient1).registerPatient();
       
@@ -226,6 +239,7 @@ describe("MedicalConsentNFT", function () {
     });
 
     it("Should not allow a non-owner to pause the contract", async function () {
+      const { consentContract, patient1 } = await deployConsentFixture();
       await expect(consentContract.connect(patient1).pause())
         .to.be.revertedWithCustomError(consentContract, "OwnableUnauthorizedAccount");
     });
