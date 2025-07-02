@@ -136,7 +136,6 @@ sequenceDiagram
     F->>P: Sélectionne offre (ex: 200 tokens → 20% réduction panier repas)
     F->>BC: redeemReward(rewardId, patientAddress)
     BC->>BC: Vérifie solde suffisant
-    BC->>BC: Vérifie limites de rachat
     BC->>BC: burn(patientAddress, tokenCost) via SBT
     BC->>BC: Génère code de réduction unique
     BC-->>F: Retourne code réduction partenaire
