@@ -12,7 +12,7 @@ Cette application a pour but de permettre à des patients de charger des donnée
 
 Le contrat `MedicalConsent` est un contrat de gestion de consentements médicaux basé sur les NFTs (ERC721) en mixant le concetp de Soul Bound Token (token ayant un unique propriétaire, sans possibilité de transfert). Il permet au patient d'accorder et de révoquer (burn du token) leur consentement pour l'utilisation de leurs données médicales dans des études spécifiques.
 
-Le contrat `CercleToken` est un contrat de création de points de fidélités basé sur l'ERC20, il implémente aussi le concept de SBT (Soul Bound Tokens). Il permet au patient d'obtenir des points de fidélités pour chaque téléchargement de données par les chercheurs. Ces points ont de multiples cas d'usages dans l'application (accès réduction panier repas,fitness, dispositifs ) ce système de gestion de points est implémenté dans le contrat `CercleTokenRewards`.
+Le contrat `CercleToken` est un contrat de création de points de fidélités basé sur l'ERC20, il implémente aussi le concept de SBT (Soul Bound Tokens). Il est appellé par la suite par `Cercle Token` ou le symbole `CERC`.Il permet au patient d'obtenir des points de fidélités pour chaque téléchargement de données par les chercheurs. Ces points ont de multiples cas d'usages dans l'application (accès réduction panier repas,fitness, dispositifs ) ce système de gestion de points est implémenté dans le contrat `CercleTokenRewards`.
 
 ## Economie circulaire de CercleToken :
 to do: 
@@ -31,27 +31,27 @@ B --> N{Veut participer au système de récompense?}
 N -->|✅ Oui| C{Anti-abus OK?}
 N -->|❌ Non| X[❌ Pas de génération de CercleToken]
 
-C -->|✅ Première fois| D[🪙 MINT +50 Tokens SBT]
-C -->|❌ Déjà récompensé| X[❌ Aucun token]
+C -->|✅ Première fois| D[🪙 MINT +50 CERC]
+C -->|❌ Déjà récompensé| X[❌ Pas de génération de CercleToken]
 
-D --> E[💰 Solde Patient: +50 CercleTokens]
+D --> E[💰 Solde Patient: +50 CERC]
 
 E --> F[🛒 Catalogue Récompenses]
 F --> G{Sélection récompense}
 
-G -->|🏥 Pharmacie| H1[🔥 BURN 200 Tokens]
-G -->|🥗 Nutrition| H2[🔥 BURN 150 Tokens]
-G -->|💪 Fitness| H3[🔥 BURN 100 Tokens]
+G -->|🏥 Pharmacie| H1[🔥 BURN 200 CERC]
+G -->|🥗 Nutrition| H2[🔥 BURN 150 CERC]
+G -->|💪 Fitness| H3[🔥 BURN 500 CERC]
 G -->|📚 Éducation| H4[Contenu gratuit]
 
-H1 --> I1[💰 Nouveau Solde: -200T]
-H2 --> I2[💰 Nouveau Solde: -150T]
-H3 --> I3[💰 Nouveau Solde: -100T]
+H1 --> I1[💰 Nouveau Solde: -200 CERC]
+H2 --> I2[💰 Nouveau Solde: -150 CERC]
+H3 --> I3[💰 Nouveau Solde: -500 CERC]
 
 
-I1 --> J1[🎁 Code Dispositifs Glycémie]
-I2 --> J2[🎁 Code Produits IG Bas]
-I3 --> J3[🎁 Code Abonnement Sport]
+I1 --> J1[🎁 Bon dispositifs contrôle glycémie]
+I2 --> J2[🎁 Bon produits indice glycémique bas]
+I3 --> J3[🎁 Bon abonnement sport]
 H4 --> J4[🎁 Accès interview chercheur et blog éducatif]
 
 J1 --> K[🏥 Amélioration Santé Patient]
