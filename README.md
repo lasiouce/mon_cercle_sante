@@ -15,6 +15,13 @@ Le contrat `MedicalConsent` est un contrat de gestion de consentements médicaux
 Le contrat `CercleToken` est un contrat de création de points de fidélités basé sur l'ERC20, il implémente aussi le concept de SBT (Soul Bound Tokens). Il permet au patient d'obtenir des points de fidélités pour chaque téléchargement de données par les chercheurs. Ces points ont de multiples cas d'usages dans l'application (accès réduction panier repas,fitness, dispositifs ) ce système de gestion de points est implémenté dans le contrat `CercleTokenRewards`.
 
 ## Economie circulaire de CercleToken :
+to do: 
+* clarifié régle anti abus (limitations annuel, mensuel) ne pas bloqué l'upload mais plus de mint de token.
+* proposition d'offre gratuite:
+      * lié à l'éducation (interview chercheur, responsable de recherche, article blockchain; article diabètique)
+      * retour lié aux études qui donne un résultat vulgarisé au patient ( vos donnée ont améliorer un modèle de mesure de glycémie)
+      * recette adapté aux diabètique 
+* gamification badge (par rank bronze, or, argent) et défi de régularité qui donne bonus token ( 12 mois donne 200 token)
 
 ```mermaid
 graph TD
