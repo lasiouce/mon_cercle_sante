@@ -29,7 +29,7 @@ A[📊 Patient Upload Données] --> B[🔬 Téléchargement par Chercheur]
 
 B --> N{Veut participer au système de récompense?}
 N -->|✅ Oui| C{Anti-abus OK?}
-N -->|❌ Non| X[❌ Aucun token]
+N -->|❌ Non| X[❌ Pas de génération de CercleToken]
 
 C -->|✅ Première fois| D[🪙 MINT +50 Tokens SBT]
 C -->|❌ Déjà récompensé| X[❌ Aucun token]
@@ -73,14 +73,13 @@ M --> A
     style I1 fill:#87CEEB,stroke:#000080,stroke-width:1px,color:#FFFFFF
     style I2 fill:#87CEEB,stroke:#000080,stroke-width:1px,color:#FFFFFF
     style I3 fill:#87CEEB,stroke:#000080,stroke-width:1px,color:#FFFFFF
-    style I4 fill:#87CEEB,stroke:#000080,stroke-width:1px,color:#FFFFFF
     style J1 fill:#00BFFF,stroke:#000080,stroke-width:1px,color:#FFFFFFAdd commentMore actions
     style J2 fill:#00BFFF,stroke:#000080,stroke-width:1px,color:#FFFFFF
     style J3 fill:#00BFFF,stroke:#000080,stroke-width:1px,color:#FFFFFF
     style J4 fill:#00BFFF,stroke:#000080,stroke-width:1px,color:#FFFFFF
     
     classDef tokenFlow fill:#4682B4,stroke:#000080,stroke-width:1px,color:#FFFFFF
-    class A,B,C,F,G,K,L,M,X tokenFlow
+    class A,B,C,F,G,K,L,M,N,X tokenFlow
 ```
 
 ## Diagramme de séquence :
