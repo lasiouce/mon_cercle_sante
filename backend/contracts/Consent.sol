@@ -2,16 +2,15 @@
 pragma solidity 0.8.28;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-/// @title Medical Consent NFT Contract
+/// @title CercleConsent NFT Contract
 /// @author lasiouce (https://github.com/lasiouce)  
 /// @notice This contract manages medical consent as NFTs for patients participating in medical studies
 /// @dev Implements ERC721 standard with additional functionality for consent management
-contract MedicalConsentNFT is ERC721, ERC721Burnable, Ownable, Pausable {
+contract CercleConsent is ERC721, Ownable, Pausable {
     
     /// @notice Structure to store consent data
     /// @dev Contains all relevant information about a specific consent
@@ -93,7 +92,7 @@ contract MedicalConsentNFT is ERC721, ERC721Burnable, Ownable, Pausable {
     
     /// @notice Initializes the contract with the specified owner
     /// @param initialOwner The address of the initial owner of the contract
-    constructor(address initialOwner) ERC721("Medical Consent NFT", "MCNFT") Ownable(initialOwner) {}
+    constructor(address initialOwner) ERC721("CercleConsent", "CERCONSENT") Ownable(initialOwner) {}
     
     /// @notice Registers a new patient with a unique patient ID
     /// @dev Creates a bidirectional mapping between the patient's address and ID
@@ -204,8 +203,6 @@ contract MedicalConsentNFT is ERC721, ERC721Burnable, Ownable, Pausable {
             break;
             }
         }
-  
-        _burn(consentId);
         -- _totalConsents;
         emit ConsentRevoked(consentId, patientId, consent.studyId, block.timestamp);
     }
@@ -286,5 +283,47 @@ contract MedicalConsentNFT is ERC721, ERC721Burnable, Ownable, Pausable {
     /// @return True if the token exists, false otherwise
     function _exists(uint256 tokenId) private view returns (bool) {
         return _ownerOf(tokenId) != address(0);
+    }
+
+    /// @notice Soul Bound Token - Les transferts sont interdits
+    /// @dev Override des fonctions de transfert pour les rendre non-fonctionnelles
+    function transferFrom(address, address, uint256) public pure override {
+        revert("SBT: Les transferts sont interdits");
+    }
+    
+    /// @notice Soul Bound Token - Les transferts sécurisés sont interdits
+    function safeTransferFrom(address, address, uint256) public pure override {
+        revert("SBT: Les transferts sont interdits");
+    }
+    
+    /// @notice Soul Bound Token - Les transferts sécurisés avec données sont interdits
+    function safeTransferFrom(address, address, uint256, bytes memory) public pure override {
+        revert("SBT: Les transferts sont interdits");
+    }
+    
+    /// @notice Soul Bound Token - Les approbations sont interdites
+    function approve(address, uint256) public pure override {
+        revert("SBT: Les approbations sont interdites");
+    }
+    
+    /// @notice Soul Bound Token - Les approbations pour tous sont interdites
+    function setApprovalForAll(address, bool) public pure override {
+        revert("SBT: Les approbations sont interdites");
+    }
+    
+    /// @notice Soul Bound Token - Aucune approbation n'est possible
+    function getApproved(uint256) public pure override returns (address) {
+        return address(0);
+    }
+    
+    /// @notice Soul Bound Token - Aucune approbation pour tous n'est possible
+    function isApprovedForAll(address, address) public pure override returns (bool) {
+        return false;
+    }
+    
+    /// @notice Soul Bound Token - La destruction est interdite
+    /// @dev Override de _burn pour empêcher la destruction des tokens SBT
+    function _burn(uint256) internal pure override {
+        revert("SBT: La destruction des tokens est interdite");
     }
 }
