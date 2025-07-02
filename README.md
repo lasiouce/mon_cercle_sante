@@ -18,9 +18,9 @@ Le contrat `CercleToken` est un contrat de création de points de fidélités ba
 to do: 
 * clarifié régle anti abus (limitations annuel, mensuel) ne pas bloqué l'upload mais plus de mint de token.
 * proposition d'offre gratuite:
-      - lié à l'éducation (interview chercheur, responsable de recherche, article blockchain; article diabètique)
-      - retour lié aux études qui donne un résultat vulgarisé au patient ( vos donnée ont améliorer un modèle de mesure de glycémie)
-      - recette adapté aux diabètique 
+    - lié à l'éducation (interview chercheur, responsable de recherche, article blockchain; article diabètique)
+    - retour lié aux études qui donne un résultat vulgarisé au patient ( vos donnée ont améliorer un modèle de mesure de glycémie)
+    - recette adapté aux diabètique 
 * gamification badge (par rank bronze, or, argent) et défi de régularité qui donne bonus token ( 12 mois donne 200 token)
 
 ```mermaid
