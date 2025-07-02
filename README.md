@@ -63,6 +63,24 @@ K --> L[📈 Plus d'Engagement Patient]
 L --> M[📊 Plus de Données Partagées]
 M --> A
 
+%% Styles avec couleurs foncées pour texte blancAdd commentMore actions
+    style D fill:#2E7D32,stroke:#000080,stroke-width:1px,color:#FFFFFF
+    style E fill:#4A148C,stroke:#000080,stroke-width:1px,color:#FFFFFF
+    style H1 fill:#B0C4DE,stroke:#000080,stroke-width:1px,color:#FFFFFF
+    style H2 fill:#B0C4DE,stroke:#000080,stroke-width:1px,color:#FFFFFF
+    style H3 fill:#B0C4DE,stroke:#000080,stroke-width:1px,color:#FFFFFF
+    style H4 fill:#B0C4DE,stroke:#000080,stroke-width:1px,color:#FFFFFF
+    style I1 fill:#87CEEB,stroke:#000080,stroke-width:1px,color:#FFFFFF
+    style I2 fill:#87CEEB,stroke:#000080,stroke-width:1px,color:#FFFFFF
+    style I3 fill:#87CEEB,stroke:#000080,stroke-width:1px,color:#FFFFFF
+    style I4 fill:#87CEEB,stroke:#000080,stroke-width:1px,color:#FFFFFF
+    style J1 fill:#00BFFF,stroke:#000080,stroke-width:1px,color:#FFFFFFAdd commentMore actions
+    style J2 fill:#00BFFF,stroke:#000080,stroke-width:1px,color:#FFFFFF
+    style J3 fill:#00BFFF,stroke:#000080,stroke-width:1px,color:#FFFFFF
+    style J4 fill:#00BFFF,stroke:#000080,stroke-width:1px,color:#FFFFFF
+    
+    classDef tokenFlow fill:#4682B4,stroke:#000080,stroke-width:1px,color:#FFFFFF
+    class A,B,C,F,G,K,L,M,X tokenFlow
 ```
 
 ## Diagramme de séquence :
