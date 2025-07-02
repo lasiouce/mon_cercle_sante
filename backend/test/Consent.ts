@@ -1,10 +1,10 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { MedicalConsentNFT } from "../typechain-types";
+import { CercleConsent } from "../typechain-types";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
 describe("MedicalConsentNFT", function () {
-  let consentContract: MedicalConsentNFT;
+  let consentContract: CercleConsent;
   let owner: HardhatEthersSigner;
   let patient1: HardhatEthersSigner;
   let patient2: HardhatEthersSigner;
@@ -19,8 +19,8 @@ describe("MedicalConsentNFT", function () {
     const patient1 = signers[1];
     const patient2 = signers[2];
 
-    const ConsentFactory = await ethers.getContractFactory("MedicalConsentNFT");
-    const consentContract = await ConsentFactory.deploy(owner.address) as MedicalConsentNFT;
+    const ConsentFactory = await ethers.getContractFactory("CercleConsent");
+    const consentContract = await ConsentFactory.deploy(owner.address) as CercleConsent;
 
     // Test data preparation
     const studyId = ethers.keccak256(ethers.toUtf8Bytes("Study1"));
@@ -240,6 +240,236 @@ describe("MedicalConsentNFT", function () {
       const { consentContract, patient1 } = await deployConsentFixture();
       await expect(consentContract.connect(patient1).pause())
         .to.be.revertedWithCustomError(consentContract, "OwnableUnauthorizedAccount");
+    });
+  });
+
+  describe("Soul Bound Token (SBT) Features", function () {
+    async function deployConsentWithRegisteredPatientAndTokenFixture() {
+      const baseFixture = await deployConsentFixture();
+      await baseFixture.consentContract.connect(baseFixture.patient1).registerPatient();
+      await baseFixture.consentContract.connect(baseFixture.patient2).registerPatient();
+      
+      // Grant a consent token to patient1
+      const validityDuration = 60 * 60 * 24 * 30; // 30 days in seconds
+      await baseFixture.consentContract.connect(baseFixture.patient1).selfGrantConsent(
+        baseFixture.datasetHash,
+        baseFixture.studyId,
+        validityDuration
+      );
+      
+      const patientId = await baseFixture.consentContract.getPatientId(baseFixture.patient1.address);
+      const patientConsents = await baseFixture.consentContract.getPatientConsents(patientId);
+      const tokenId = patientConsents[0];
+      
+      return { ...baseFixture, tokenId, patientId };
+    }
+
+    describe("Transfer restrictions", function () {
+      it("Should reject transferFrom attempts", async function () {
+        const { consentContract, patient1, patient2, tokenId } = await deployConsentWithRegisteredPatientAndTokenFixture();
+        
+        await expect(
+          consentContract.connect(patient1).transferFrom(patient1.address, patient2.address, tokenId)
+        ).to.be.revertedWith("CERCONSENT: Les transferts sont interdits");
+      });
+
+      it("Should reject safeTransferFrom attempts (without data)", async function () {
+        const { consentContract, patient1, patient2, tokenId } = await deployConsentWithRegisteredPatientAndTokenFixture();
+        
+        await expect(
+          consentContract.connect(patient1)["safeTransferFrom(address,address,uint256)"](
+            patient1.address, 
+            patient2.address, 
+            tokenId
+          )
+        ).to.be.revertedWith("CERCONSENT: Les transferts sont interdits");
+      });
+
+      it("Should reject safeTransferFrom attempts (with data)", async function () {
+        const { consentContract, patient1, patient2, tokenId } = await deployConsentWithRegisteredPatientAndTokenFixture();
+        
+        await expect(
+          consentContract.connect(patient1)["safeTransferFrom(address,address,uint256,bytes)"](
+            patient1.address, 
+            patient2.address, 
+            tokenId,
+            "0x"
+          )
+        ).to.be.revertedWith("CERCONSENT: Les transferts sont interdits");
+      });
+
+      it("Should reject transfers even from approved addresses", async function () {
+        const { consentContract, patient1, patient2, tokenId } = await deployConsentWithRegisteredPatientAndTokenFixture();
+        
+        // Even if we could approve (which we can't), transfers should still fail
+        await expect(
+          consentContract.connect(patient2).transferFrom(patient1.address, patient2.address, tokenId)
+        ).to.be.revertedWith("CERCONSENT: Les transferts sont interdits");
+      });
+    });
+
+    describe("Approval restrictions", function () {
+      it("Should reject approve attempts", async function () {
+        const { consentContract, patient1, patient2, tokenId } = await deployConsentWithRegisteredPatientAndTokenFixture();
+        
+        await expect(
+          consentContract.connect(patient1).approve(patient2.address, tokenId)
+        ).to.be.revertedWith("CERCONSENT: Les approbations sont interdites");
+      });
+
+      it("Should reject setApprovalForAll attempts", async function () {
+        const { consentContract, patient1, patient2 } = await deployConsentWithRegisteredPatientAndTokenFixture();
+        
+        await expect(
+          consentContract.connect(patient1).setApprovalForAll(patient2.address, true)
+        ).to.be.revertedWith("CERCONSENT: Les approbations sont interdites");
+      });
+
+      it("Should always return address(0) for getApproved", async function () {
+        const { consentContract, tokenId } = await deployConsentWithRegisteredPatientAndTokenFixture();
+        
+        const approved = await consentContract.getApproved(tokenId);
+        expect(approved).to.equal(ethers.ZeroAddress);
+      });
+
+      it("Should always return false for isApprovedForAll", async function () {
+        const { consentContract, patient1, patient2 } = await deployConsentWithRegisteredPatientAndTokenFixture();
+        
+        const isApproved = await consentContract.isApprovedForAll(patient1.address, patient2.address);
+        expect(isApproved).to.be.false;
+      });
+    });
+
+    describe("Token ownership verification", function () {
+      it("Should maintain correct ownership after minting", async function () {
+        const { consentContract, patient1, tokenId } = await deployConsentWithRegisteredPatientAndTokenFixture();
+        
+        const owner = await consentContract.ownerOf(tokenId);
+        expect(owner).to.equal(patient1.address);
+      });
+
+      it("Should maintain ownership even after failed transfer attempts", async function () {
+        const { consentContract, patient1, patient2, tokenId } = await deployConsentWithRegisteredPatientAndTokenFixture();
+        
+        // Try to transfer (should fail)
+        await expect(
+          consentContract.connect(patient1).transferFrom(patient1.address, patient2.address, tokenId)
+        ).to.be.revertedWith("CERCONSENT: Les transferts sont interdits");
+        
+        // Verify ownership hasn't changed
+        const owner = await consentContract.ownerOf(tokenId);
+        expect(owner).to.equal(patient1.address);
+      });
+
+      it("Should correctly report balance after minting", async function () {
+        const { consentContract, patient1, patient2 } = await deployConsentWithRegisteredPatientAndTokenFixture();
+        
+        const balance1 = await consentContract.balanceOf(patient1.address);
+        const balance2 = await consentContract.balanceOf(patient2.address);
+        
+        expect(balance1).to.equal(1);
+        expect(balance2).to.equal(0);
+      });
+    });
+
+    describe("CERCONSENT compliance verification", function () {
+      it("Should support ERC721 interface", async function () {
+        const { consentContract } = await deployConsentFixture();
+        
+        // ERC721 interface ID: 0x80ac58cd
+        const supportsERC721 = await consentContract.supportsInterface("0x80ac58cd");
+        expect(supportsERC721).to.be.true;
+      });
+
+      it("Should allow minting new tokens", async function () {
+        const { consentContract, patient1, datasetHash, studyId } = await deployConsentFixture();
+        await consentContract.connect(patient1).registerPatient();
+        
+        const validityDuration = 60 * 60 * 24 * 30; // 30 days in seconds
+        
+        await expect(
+          consentContract.connect(patient1).selfGrantConsent(
+            datasetHash,
+            studyId,
+            validityDuration
+          )
+        ).to.not.be.reverted;
+        
+        const patientId = await consentContract.getPatientId(patient1.address);
+        const patientConsents = await consentContract.getPatientConsents(patientId);
+        expect(patientConsents.length).to.equal(1);
+      });
+
+      it("Should allow token revocation (marking as inactive)", async function () {
+        const { consentContract, patient1, tokenId, patientId } = await deployConsentWithRegisteredPatientAndTokenFixture();
+        
+        // Verify token is initially valid
+        const isValidBefore = await consentContract.isConsentValid(tokenId, patientId);
+        expect(isValidBefore).to.be.true;
+        
+        // Revoke the consent
+        await consentContract.connect(patient1).revokeConsent(tokenId, patientId);
+        
+        // Verify token is no longer valid
+        const isValidAfter = await consentContract.isConsentValid(tokenId, patientId);
+        expect(isValidAfter).to.be.false;
+      });
+
+      it("Should maintain token existence even after revocation", async function () {
+        const { consentContract, patient1, tokenId, patientId } = await deployConsentWithRegisteredPatientAndTokenFixture();
+        
+        // Revoke the consent
+        await consentContract.connect(patient1).revokeConsent(tokenId, patientId);
+        
+        // Token should still exist (owner should still be patient1)
+        const owner = await consentContract.ownerOf(tokenId);
+        expect(owner).to.equal(patient1.address);
+        
+        // But consent should be marked as inactive
+        const consentDetails = await consentContract.getConsentDetails(tokenId, patientId);
+        expect(consentDetails.isActive).to.be.false;
+        expect(consentDetails.revokedAt).to.be.gt(0);
+      });
+    });
+
+    describe("Edge cases and security", function () {
+      it("Should prevent transfers even by contract owner", async function () {
+        const { consentContract, owner, patient1, patient2, tokenId } = await deployConsentWithRegisteredPatientAndTokenFixture();
+        
+        await expect(
+          consentContract.connect(owner).transferFrom(patient1.address, patient2.address, tokenId)
+        ).to.be.revertedWith("CERCONSENT: Les transferts sont interdits");
+      });
+
+      it("Should prevent self-transfers", async function () {
+        const { consentContract, patient1, tokenId } = await deployConsentWithRegisteredPatientAndTokenFixture();
+        
+        await expect(
+          consentContract.connect(patient1).transferFrom(patient1.address, patient1.address, tokenId)
+        ).to.be.revertedWith("CERCONSENT: Les transferts sont interdits");
+      });
+
+      it("Should handle multiple tokens per patient correctly", async function () {
+        const { consentContract, patient1, datasetHash, studyId } = await deployConsentFixture();
+        await consentContract.connect(patient1).registerPatient();
+        
+        const validityDuration = 60 * 60 * 24 * 30; // 30 days in seconds
+        
+        // Grant multiple consents
+        await consentContract.connect(patient1).selfGrantConsent(datasetHash, studyId, validityDuration);
+        await consentContract.connect(patient1).selfGrantConsent(datasetHash, studyId, validityDuration);
+        
+        const patientId = await consentContract.getPatientId(patient1.address);
+        const patientConsents = await consentContract.getPatientConsents(patientId);
+        expect(patientConsents.length).to.equal(2);
+        
+        // Both tokens should be non-transferable
+        for (const tokenId of patientConsents) {
+          await expect(
+            consentContract.connect(patient1).transferFrom(patient1.address, patient1.address, tokenId)
+          ).to.be.revertedWith("CERCONSENT: Les transferts sont interdits");
+        }
+      });
     });
   });
 });

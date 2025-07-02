@@ -284,31 +284,15 @@ contract CercleConsent is ERC721, Ownable, Pausable {
     function _exists(uint256 tokenId) private view returns (bool) {
         return _ownerOf(tokenId) != address(0);
     }
-
-    /// @notice Soul Bound Token - Les transferts sont interdits
-    /// @dev Override des fonctions de transfert pour les rendre non-fonctionnelles
-    function transferFrom(address, address, uint256) public pure override {
-        revert("SBT: Les transferts sont interdits");
-    }
-    
-    /// @notice Soul Bound Token - Les transferts sécurisés sont interdits
-    function safeTransferFrom(address, address, uint256) public pure override {
-        revert("SBT: Les transferts sont interdits");
-    }
-    
-    /// @notice Soul Bound Token - Les transferts sécurisés avec données sont interdits
-    function safeTransferFrom(address, address, uint256, bytes memory) public pure override {
-        revert("SBT: Les transferts sont interdits");
-    }
     
     /// @notice Soul Bound Token - Les approbations sont interdites
     function approve(address, uint256) public pure override {
-        revert("SBT: Les approbations sont interdites");
+        revert("CERCONSENT: Les approbations sont interdites");
     }
     
     /// @notice Soul Bound Token - Les approbations pour tous sont interdites
     function setApprovalForAll(address, bool) public pure override {
-        revert("SBT: Les approbations sont interdites");
+        revert("CERCONSENT: Les approbations sont interdites");
     }
     
     /// @notice Soul Bound Token - Aucune approbation n'est possible
@@ -320,10 +304,18 @@ contract CercleConsent is ERC721, Ownable, Pausable {
     function isApprovedForAll(address, address) public pure override returns (bool) {
         return false;
     }
-    
-    /// @notice Soul Bound Token - La destruction est interdite
-    /// @dev Override de _burn pour empêcher la destruction des tokens SBT
-    function _burn(uint256) internal pure override {
-        revert("SBT: La destruction des tokens est interdite");
+
+    /// @notice Override _update pour bloquer tous les transferts (Soul Bound Token)
+    /// @dev Cette fonction est appelée par toutes les opérations de transfert
+    function _update(address to, uint256 tokenId, address auth) internal override returns (address) {
+        address from = _ownerOf(tokenId);
+        
+        // Permettre le minting (from == address(0))
+        if (from == address(0)) {
+            return super._update(to, tokenId, auth);
+        }
+        
+        // Bloquer tous les autres transferts
+        revert("CERCONSENT: Les transferts sont interdits");
     }
 }
