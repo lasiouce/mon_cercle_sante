@@ -25,59 +25,44 @@ to do:
 
 ```mermaid
 graph TD
-    A[📊 Patient Upload Données] --> B[🔬 Téléchargement par Chercheur]
-    
-    B --> C{Anti-abus OK?}
-    C -->|✅ Première fois| D[🪙 MINT +50 Tokens SBT]
-    C -->|❌ Déjà récompensé| X[❌ Aucun token]
-    
-    D --> E[💰 Solde Patient: +50 CercleTokens]
-    
-    E --> F[🛒 Catalogue Récompenses]
-    F --> G{Sélection récompense}
-    
-    G -->|🏥 Pharmacie| H1[🔥 BURN 200 Tokens]
-    G -->|🥗 Nutrition| H2[🔥 BURN 150 Tokens]
-    G -->|💪 Fitness| H3[🔥 BURN 100 Tokens]
-    G -->|📚 Éducation| H4[🔥 BURN 75 Tokens]
-    
-    H1 --> I1[💰 Nouveau Solde: -200T]
-    H2 --> I2[💰 Nouveau Solde: -150T]
-    H3 --> I3[💰 Nouveau Solde: -100T]
-    H4 --> I4[💰 Nouveau Solde: -75T]
-    
-    I1 --> J1[🎁 Code Dispositifs Glycémie]
-    I2 --> J2[🎁 Code Produits IG Bas]
-    I3 --> J3[🎁 Code Abonnement Sport]
-    I4 --> J4[🎁 Code Consultation]
-    
-    J1 --> K[🏥 Amélioration Santé Patient]
-    J2 --> K
-    J3 --> K
-    J4 --> K
-    
-    K --> L[📈 Plus d'Engagement Patient]
-    L --> M[📊 Plus de Données Partagées]
-    M --> A
-    
-    %% Styles avec couleurs foncées pour texte blanc
-    style D fill:#2E7D32,stroke:#000080,stroke-width:1px,color:#FFFFFF
-    style E fill:#4A148C,stroke:#000080,stroke-width:1px,color:#FFFFFF
-    style H1 fill:#B0C4DE,stroke:#000080,stroke-width:1px,color:#FFFFFF
-    style H2 fill:#B0C4DE,stroke:#000080,stroke-width:1px,color:#FFFFFF
-    style H3 fill:#B0C4DE,stroke:#000080,stroke-width:1px,color:#FFFFFF
-    style H4 fill:#B0C4DE,stroke:#000080,stroke-width:1px,color:#FFFFFF
-    style I1 fill:#87CEEB,stroke:#000080,stroke-width:1px,color:#FFFFFF
-    style I2 fill:#87CEEB,stroke:#000080,stroke-width:1px,color:#FFFFFF
-    style I3 fill:#87CEEB,stroke:#000080,stroke-width:1px,color:#FFFFFF
-    style I4 fill:#87CEEB,stroke:#000080,stroke-width:1px,color:#FFFFFF
-    style J1 fill:#00BFFF,stroke:#000080,stroke-width:1px,color:#FFFFFF
-    style J2 fill:#00BFFF,stroke:#000080,stroke-width:1px,color:#FFFFFF
-    style J3 fill:#00BFFF,stroke:#000080,stroke-width:1px,color:#FFFFFF
-    style J4 fill:#00BFFF,stroke:#000080,stroke-width:1px,color:#FFFFFF
-    
-    classDef tokenFlow fill:#4682B4,stroke:#000080,stroke-width:1px,color:#FFFFFF
-    class A,B,C,F,G,K,L,M,X tokenFlow
+A[📊 Patient Upload Données] --> B[🔬 Téléchargement par Chercheur]
+
+B --> N{Veut participer au système de récompense?}
+N -->|✅ Oui| C{Anti-abus OK?}
+N -->|❌ Non| X[❌ Aucun token]
+
+C -->|✅ Première fois| D[🪙 MINT +50 Tokens SBT]
+C -->|❌ Déjà récompensé| X[❌ Aucun token]
+
+D --> E[💰 Solde Patient: +50 CercleTokens]
+
+E --> F[🛒 Catalogue Récompenses]
+F --> G{Sélection récompense}
+
+G -->|🏥 Pharmacie| H1[🔥 BURN 200 Tokens]
+G -->|🥗 Nutrition| H2[🔥 BURN 150 Tokens]
+G -->|💪 Fitness| H3[🔥 BURN 100 Tokens]
+G -->|📚 Éducation| H4[Contenu gratuit]
+
+H1 --> I1[💰 Nouveau Solde: -200T]
+H2 --> I2[💰 Nouveau Solde: -150T]
+H3 --> I3[💰 Nouveau Solde: -100T]
+
+
+I1 --> J1[🎁 Code Dispositifs Glycémie]
+I2 --> J2[🎁 Code Produits IG Bas]
+I3 --> J3[🎁 Code Abonnement Sport]
+H4 --> J4[🎁 Accès interview chercheur et blog éducatif]
+
+J1 --> K[🏥 Amélioration Santé Patient]
+J2 --> K
+J3 --> K
+J4 --> K
+
+K --> L[📈 Plus d'Engagement Patient]
+L --> M[📊 Plus de Données Partagées]
+M --> A
+
 ```
 
 ## Diagramme de séquence :
