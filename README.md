@@ -12,12 +12,12 @@ Cette application a pour but de permettre à des patients de charger des donnée
 
 Le contrat `MedicalConsent` est un contrat de gestion de consentements médicaux basé sur les NFTs (ERC721) en mixant le concetp de Soul Bound Token (token ayant un unique propriétaire, sans possibilité de transfert). Il permet au patient d'accorder et de révoquer (burn du token) leur consentement pour l'utilisation de leurs données médicales dans des études spécifiques.
 
-Le contrat `CercleToken` est un contrat de création de points de fidélités basé sur l'ERC20, il implémente aussi le concept de SBT (Soul Bound Tokens). Il est appellé par la suite par `Cercle Token` ou le symbole `CERC`.Il permet au patient d'obtenir des points de fidélités pour chaque téléchargement de données par les chercheurs. Ces points ont de multiples cas d'usages dans l'application (accès réduction panier repas,fitness, dispositifs ) ce système de gestion de points est implémenté dans le contrat `CercleTokenRewards`.
+Le contrat `CercleToken` est un contrat de création de points de fidélités basé sur l'ERC20, il implémente aussi le concept de SBT (Soul Bound Tokens). Ces points de fidélité sont appellé par la suite par `CercleToken` ou `CERC`.Un montant de CercleToken est crée sur le compte du patient pour chaques téléchargements de données par les chercheurs. Ils ont de multiples cas d'usages dans l'application (accès réduction panier repas,fitness, dispositifs pharmaceutiques etc.) ce système de gestion de points est implémenté dans le contrat `CercleTokenRewards`.
 
 ## Economie circulaire de CercleToken :
 to do: 
-* clarifié régle anti abus (limitations annuel, mensuel) ne pas bloqué l'upload mais plus de mint de token.
-* proposition d'offre gratuite:
+* clarifier régles anti abus (limitations annuel, mensuel) ne pas bloqué l'upload mais plus de mint de token.
+* proposition d'offres gratuites:
     - lié à l'éducation (interview chercheur, responsable de recherche, article blockchain; article diabètique)
     - retour lié aux études qui donne un résultat vulgarisé au patient ( vos donnée ont améliorer un modèle de mesure de glycémie)
     - recette adapté aux diabètique 
