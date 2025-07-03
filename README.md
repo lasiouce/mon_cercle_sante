@@ -16,11 +16,12 @@ Le contrat `CercleToken` est un contrat de création de points de fidélités ba
 
 ## Economie circulaire de CercleToken :
 to do: 
-* clarifier régles anti abus (limitations annuel, mensuel) ne pas bloqué l'upload mais plus de mint de token.
+* clarifier régles anti abus (limitations annuel, mensuel) ne pas bloquer l'upload mais plus de mint de token.
 * proposition d'offres gratuites:
     - lié à l'éducation (interview chercheur, responsable de recherche, article blockchain; article diabètique)
     - retour lié aux études qui donne un résultat vulgarisé au patient ( vos donnée ont améliorer un modèle de mesure de glycémie)
-    - recette adapté aux diabètique 
+    - recette adapté aux diabètique
+    - Inscription Groupe Local (les contributeurs se rencontrent - cf groupe de parole -, peuvent échanger entre eux et avec les chercheurs, co animation des groupes locaux avec les CHUs locaux ?,) > Ce sera l'occasion d'ientifier des besoins spécifiques à ce type de patients, de faire remonter les besoins, échanger sur les bonnes pratiques entre les groupes, d'ajuster la gamification / les badges ...
 * gamification badge (par rank bronze, or, argent) et défi de régularité qui donne bonus token ( 12 mois donne 200 token)
 
 ```mermaid
