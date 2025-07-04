@@ -1,7 +1,5 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { createTestClient, http, parseAbiItem, publicActions } from 'viem'
-import { hardhat } from 'viem/chains'
 import { CercleToken } from "../typechain-types";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
@@ -11,11 +9,6 @@ describe("CercleToken", function () {
   let patient1: HardhatEthersSigner;
   let patient2: HardhatEthersSigner;
   let datasetHash: string;
-  const client = createTestClient({
-    chain: hardhat,
-    mode: 'hardhat',
-    transport: http(), 
-  }).extend(publicActions)
 
   async function deployCercleTokenFixture() {
     const signers = await ethers.getSigners();
