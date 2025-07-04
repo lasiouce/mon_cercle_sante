@@ -64,7 +64,7 @@ describe("MedicalConsentNFT", function () {
       
       // Test duplicate registration prevention
       await expect(consentContract.connect(patient1).registerPatient())
-        .to.be.revertedWith("Adresse deja enregistree");
+        .to.be.revertedWithCustomError(consentContract, "AddressAlreadyRegistered");
       
       // Test patient ID retrieval
       const patientId = await consentContract.getPatientId(patient1.address);
@@ -87,14 +87,14 @@ describe("MedicalConsentNFT", function () {
       
       // Test invalid patient IDs
       await expect(consentContract.getPatientInfo(0))
-        .to.be.revertedWith("PatientId inexistant");
+        .to.be.revertedWithCustomError(consentContract, "PatientIdDoesNotExist");
       await expect(consentContract.getPatientInfo(999))
-        .to.be.revertedWith("PatientId inexistant");
+        .to.be.revertedWithCustomError(consentContract, "PatientIdDoesNotExist");
       
       // Test onlyRegisteredPatient modifier logic (lines 89-90)
       // This covers the modifier's require statement and error message
       await expect(consentContract.getPatientId(patient2.address))
-        .to.be.revertedWith("Patient non enregistre");
+        .to.be.revertedWithCustomError(consentContract, "PatientNotRegistered");
       
       // Verify the modifier's positive case
       const isRegistered = await consentContract.isPatientRegistered(patient1.address);
@@ -125,7 +125,7 @@ describe("MedicalConsentNFT", function () {
       await expect(consentContract.connect(owner).authorizeStudy(
         "0x0000000000000000000000000000000000000000000000000000000000000000",
         "Test Study"
-      )).to.be.revertedWith("ID etude requis");
+      )).to.be.revertedWithCustomError(consentContract, "StudyIdRequired");
     });
 
     it("Should handle study authorization revocation", async function () {
@@ -141,7 +141,7 @@ describe("MedicalConsentNFT", function () {
       await expect(consentContract.connect(owner).revokeStudyAuthorization(
         nonAuthorizedStudyId,
         "Non Authorized Study"
-      )).to.be.revertedWith("Etude non autorisee");
+      )).to.be.revertedWithCustomError(consentContract, "StudyNotAuthorizedForRevocation");
     });
   });
 
@@ -186,21 +186,21 @@ describe("MedicalConsentNFT", function () {
           datasetHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
           studyId: studyId,
           validityDuration: validityDuration,
-          expectedError: "Dataset hash required"
+          expectedError: "DatasetHashRequired"
         },
         {
           name: "zero validity duration",
           datasetHash: datasetHash,
           studyId: studyId,
           validityDuration: 0,
-          expectedError: "Validity duration required"
+          expectedError: "ValidityDurationRequired"
         },
         {
           name: "unauthorized study",
           datasetHash: datasetHash,
           studyId: ethers.keccak256(ethers.toUtf8Bytes("InvalidStudy")),
           validityDuration: validityDuration,
-          expectedError: "Etude non autorisee"
+          expectedError: "StudyNotAuthorized"
         }
       ];
 
@@ -209,7 +209,7 @@ describe("MedicalConsentNFT", function () {
           testCase.datasetHash,
           testCase.studyId,
           testCase.validityDuration
-        )).to.be.revertedWith(testCase.expectedError);
+        )).to.be.revertedWithCustomError(consentContract, testCase.expectedError);
       }
     });
 
@@ -218,7 +218,7 @@ describe("MedicalConsentNFT", function () {
       
       // Test unauthorized revocation
       await expect(consentContract.connect(patient2).revokeConsent(tokenId, patientId))
-        .to.be.revertedWith("Seul le proprietaire peut revoquer");
+        .to.be.revertedWithCustomError(consentContract, "OnlyOwnerCanRevoke");
       
       // Test successful revocation
       await consentContract.connect(patient1).revokeConsent(tokenId, patientId);
@@ -231,7 +231,7 @@ describe("MedicalConsentNFT", function () {
       
       // Test double revocation
       await expect(consentContract.connect(patient1).revokeConsent(tokenId, patientId))
-        .to.be.revertedWith("Consentement deja revoque");
+        .to.be.revertedWithCustomError(consentContract, "ConsentAlreadyRevoked");
     });
 
     it("Should retrieve consent details and handle edge cases", async function () {
@@ -248,7 +248,7 @@ describe("MedicalConsentNFT", function () {
       const nonExistentPatientId = 999;
       
       await expect(consentContract.getConsentDetails(nonExistentTokenId, nonExistentPatientId))
-        .to.be.revertedWith("Token inexistant");
+        .to.be.revertedWithCustomError(consentContract, "TokenDoesNotExist");
       
       const isValidNonExistent = await consentContract.isConsentValid(nonExistentTokenId, nonExistentPatientId);
       expect(isValidNonExistent).to.be.false;
@@ -353,7 +353,7 @@ describe("MedicalConsentNFT", function () {
 
       for (const test of transferTests) {
         await expect(test.operation())
-          .to.be.revertedWith("CERCONSENT: Les transferts sont interdits");
+          .to.be.revertedWithCustomError(consentContract, "TransfersDisabled");
       }
     });
 
@@ -362,10 +362,10 @@ describe("MedicalConsentNFT", function () {
       
       // Test approval restrictions
       await expect(consentContract.connect(patient1).approve(patient2.address, tokenId))
-        .to.be.revertedWith("CERCONSENT: Les approbations sont interdites");
+        .to.be.revertedWithCustomError(consentContract, "ApprovalsDisabled");
       
       await expect(consentContract.connect(patient1).setApprovalForAll(patient2.address, true))
-        .to.be.revertedWith("CERCONSENT: Les approbations sont interdites");
+        .to.be.revertedWithCustomError(consentContract, "ApprovalsDisabled");
       
       // Test approval getters
       const approved = await consentContract.getApproved(tokenId);
@@ -394,7 +394,7 @@ describe("MedicalConsentNFT", function () {
       // Test ownership persistence after failed transfer
       await expect(
         consentContract.connect(patient1).transferFrom(patient1.address, patient2.address, tokenId)
-      ).to.be.revertedWith("CERCONSENT: Les transferts sont interdits");
+      ).to.be.revertedWithCustomError(consentContract, "TransfersDisabled");
       
       const ownerAfterFailedTransfer = await consentContract.ownerOf(tokenId);
       expect(ownerAfterFailedTransfer).to.equal(patient1.address);
@@ -417,7 +417,7 @@ describe("MedicalConsentNFT", function () {
       for (const tokenId of patientConsents) {
         await expect(
           consentContract.connect(patient1).transferFrom(patient1.address, patient1.address, tokenId)
-        ).to.be.revertedWith("CERCONSENT: Les transferts sont interdits");
+        ).to.be.revertedWithCustomError(consentContract, "TransfersDisabled");
       }
       
       // Test revocation maintains token existence

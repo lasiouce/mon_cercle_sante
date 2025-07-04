@@ -4,7 +4,6 @@ pragma solidity 0.8.28;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /// @title CercleConsent NFT Contract
 /// @author lasiouce (https://github.com/lasiouce)  
@@ -46,6 +45,50 @@ contract CercleConsent is ERC721, Ownable, Pausable {
     /// @notice Next patient ID to be assigned
     uint256 private _nextPatientId;
     
+    // ============ CUSTOM ERRORS ============
+    
+    /// @notice Erreur levée quand une étude n'est pas autorisée
+    error StudyNotAuthorized();
+    
+    /// @notice Erreur levée quand un patient n'est pas enregistré
+    error PatientNotRegistered();
+    
+    /// @notice Erreur levée quand une adresse est déjà enregistrée
+    error AddressAlreadyRegistered();
+    
+    /// @notice Erreur levée quand un ID de patient n'existe pas
+    error PatientIdDoesNotExist();
+    
+    /// @notice Erreur levée quand une adresse de patient est invalide
+    error InvalidPatientAddress();
+    
+    /// @notice Erreur levée quand le hash du dataset est requis
+    error DatasetHashRequired();
+    
+    /// @notice Erreur levée quand la durée de validité est requise
+    error ValidityDurationRequired();
+    
+    /// @notice Erreur levée quand seul le propriétaire peut révoquer
+    error OnlyOwnerCanRevoke();
+    
+    /// @notice Erreur levée quand le consentement est déjà révoqué
+    error ConsentAlreadyRevoked();
+    
+    /// @notice Erreur levée quand un token n'existe pas
+    error TokenDoesNotExist();
+    
+    /// @notice Erreur levée quand un ID d'étude est requis
+    error StudyIdRequired();
+    
+    /// @notice Erreur levée quand une étude n'est pas autorisée pour la révocation
+    error StudyNotAuthorizedForRevocation();
+    
+    /// @notice Erreur levée quand les approbations sont interdites (Soul Bound Token)
+    error ApprovalsDisabled();
+    
+    /// @notice Erreur levée quand les transferts sont interdits (Soul Bound Token)
+    error TransfersDisabled();
+    
     /// @notice Emitted when a patient is registered
     /// @param walletAddress The address of the patient's wallet
     /// @param patientId The unique ID assigned to the patient
@@ -79,14 +122,14 @@ contract CercleConsent is ERC721, Ownable, Pausable {
     /// @notice Ensures that the study is authorized
     /// @param studyId The ID of the study to check
     modifier onlyValidStudy(bytes32 studyId) {
-        require(_authorizedStudies[studyId], "Etude non autorisee");
+        if (!_authorizedStudies[studyId]) revert StudyNotAuthorized();
         _;
     }
     
     /// @notice Ensures that the patient is registered
     /// @param walletAddress The wallet address of the patient to check
     modifier onlyRegisteredPatient(address walletAddress) {
-        require(isPatientRegistered(walletAddress), "Patient non enregistre");
+        if (!isPatientRegistered(walletAddress)) revert PatientNotRegistered();
         _;
     }
     
@@ -98,7 +141,7 @@ contract CercleConsent is ERC721, Ownable, Pausable {
     /// @dev Creates a bidirectional mapping between the patient's address and ID
     function registerPatient() external {
         uint256 patientId = ++ _nextPatientId;
-        require(!isPatientRegistered(msg.sender), "Adresse deja enregistree");
+        if (isPatientRegistered(msg.sender)) revert AddressAlreadyRegistered();
 
         Patient storage newPatient = patients[patientId];
         newPatient.walletAddress = msg.sender;
@@ -122,7 +165,7 @@ contract CercleConsent is ERC721, Ownable, Pausable {
     /// @param walletAddress The wallet address to query
     /// @return The patient ID associated with the wallet address
     function getPatientId(address walletAddress) external view returns (uint256) {
-        require(isPatientRegistered(walletAddress), "Patient non enregistre");
+        if (!isPatientRegistered(walletAddress)) revert PatientNotRegistered();
         return addressToPatientId[walletAddress];
     }
 
@@ -138,15 +181,15 @@ contract CercleConsent is ERC721, Ownable, Pausable {
         bool isActive,
         uint256[] memory consentTokenIds
     ) {
-    require(patientId!= uint256(0), "PatientId inexistant");
-    require(patients[patientId].walletAddress != address(0), "PatientId inexistant");
-    return (
-        patients[patientId].walletAddress,
-        patients[patientId].registrationDate,
-        patients[patientId].isActive,
-        patients[patientId].consentIds
-     );
-   }
+        if (patientId == uint256(0)) revert PatientIdDoesNotExist();
+        if (patients[patientId].walletAddress == address(0)) revert PatientIdDoesNotExist();
+        return (
+            patients[patientId].walletAddress,
+            patients[patientId].registrationDate,
+            patients[patientId].isActive,
+            patients[patientId].consentIds
+        );
+    }
     
     /// @notice Allows a patient to grant consent for a study
     /// @dev Creates a new NFT representing the consent
@@ -159,12 +202,12 @@ contract CercleConsent is ERC721, Ownable, Pausable {
         bytes32 studyId,
         uint256 validityDuration
     ) external whenNotPaused onlyValidStudy(studyId) returns (uint256) {
-        require(msg.sender != address(0), "Invalid patient address");
-        require(datasetHash != bytes32(0), "Dataset hash required");
-        require(validityDuration > 0, "Validity duration required");
+        if (msg.sender == address(0)) revert InvalidPatientAddress();
+        if (datasetHash == bytes32(0)) revert DatasetHashRequired();
+        if (validityDuration == 0) revert ValidityDurationRequired();
         
         uint256 patientId = addressToPatientId[msg.sender];
-        require(patientId != 0, "Patient non enregistre");
+        if (patientId == 0) revert PatientNotRegistered();
         uint256 consentId = _nextConsentId++;
         
         patients[patientId].consents[consentId] = ConsentData({
@@ -186,9 +229,9 @@ contract CercleConsent is ERC721, Ownable, Pausable {
     /// @notice Allows a patient to revoke a previously granted consent
     /// @param consentId The ID of the consent token to revoke
     function revokeConsent(uint256 consentId, uint256 patientId) external {
-        require(ownerOf(consentId) == msg.sender, "Seul le proprietaire peut revoquer");
+        if (ownerOf(consentId) != msg.sender) revert OnlyOwnerCanRevoke();
         ConsentData storage consent = patients[patientId].consents[consentId];
-        require(consent.isActive, "Consentement deja revoque");
+        if (!consent.isActive) revert ConsentAlreadyRevoked();
 
         consent.isActive = false;
         consent.revokedAt = block.timestamp;
@@ -241,7 +284,7 @@ contract CercleConsent is ERC721, Ownable, Pausable {
     /// @param tokenId The ID of the consent token to query
     /// @return The consent data associated with the token
     function getConsentDetails(uint256 tokenId, uint256 patientId) external view returns (ConsentData memory) {
-        require(_exists(tokenId), "Token inexistant");
+        if (!_exists(tokenId)) revert TokenDoesNotExist();
         return patients[patientId].consents[tokenId];
     }
     
@@ -249,7 +292,7 @@ contract CercleConsent is ERC721, Ownable, Pausable {
     /// @param studyId The ID of the study to authorize
     /// @param studyName The name of the study
     function authorizeStudy(bytes32 studyId, string memory studyName) external onlyOwner {
-        require(studyId != bytes32(0), "ID etude requis");
+        if (studyId == bytes32(0)) revert StudyIdRequired();
         _authorizedStudies[studyId] = true;
         emit StudyAuthorized(studyId, studyName);
     }
@@ -258,7 +301,7 @@ contract CercleConsent is ERC721, Ownable, Pausable {
     /// @param studyId The ID of the study whose authorization to revoke
     /// @param studyName The name of the study
     function revokeStudyAuthorization(bytes32 studyId, string memory studyName) external onlyOwner {
-        require(_authorizedStudies[studyId], "Etude non autorisee");
+        if (!_authorizedStudies[studyId]) revert StudyNotAuthorizedForRevocation();
         _authorizedStudies[studyId] = false;
         emit StudyRevoked(studyId, studyName);
     }
@@ -287,12 +330,12 @@ contract CercleConsent is ERC721, Ownable, Pausable {
     
     /// @notice Soul Bound Token - Les approbations sont interdites
     function approve(address, uint256) public pure override {
-        revert("CERCONSENT: Les approbations sont interdites");
+        revert ApprovalsDisabled();
     }
     
     /// @notice Soul Bound Token - Les approbations pour tous sont interdites
     function setApprovalForAll(address, bool) public pure override {
-        revert("CERCONSENT: Les approbations sont interdites");
+        revert ApprovalsDisabled();
     }
     
     /// @notice Soul Bound Token - Aucune approbation n'est possible
@@ -316,6 +359,6 @@ contract CercleConsent is ERC721, Ownable, Pausable {
         }
         
         // Bloquer tous les autres transferts
-        revert("CERCONSENT: Les transferts sont interdits");
+        revert TransfersDisabled();
     }
 }
