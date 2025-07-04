@@ -115,10 +115,10 @@ A[📊 Patient Upload Données] --> B[🔬 Téléchargement par Chercheur]
 
 B --> N{Veut participer au système de récompense?}
 N -->|✅ Oui| C{Limite récompenses respectée ? 200 CERCLE/mois = 4 uploads}
-N -->|❌ Non| X[❌ Pas de génération de CercleToken]
+N -->|❌ Non| X[❌ Pas de génération de CERCLE]
 
 C -->|✅ Oui| D[🪙 MINT +50 CERCLE]
-C -->|❌ Non| X[❌ Pas de génération de CercleToken]
+C -->|❌ Non| X
 
 D --> E[💰 Solde Patient: +50 CERCLE]
 
@@ -129,6 +129,7 @@ G -->|🏥 Pharmacie| H1[🔥 BURN 200 CERCLE]
 G -->|🥗 Nutrition| H2[🔥 BURN 150 CERCLE]
 G -->|💪 Fitness| H3[🔥 BURN 500 CERCLE]
 G -->|📚 Éducation| H4[Contenu gratuit]
+G --> |🗫 Communauté| H5[Contenu gratuit]
 
 H1 --> I1[💰 Nouveau Solde: -200 CERCLE]
 H2 --> I2[💰 Nouveau Solde: -150 CERCLE]
@@ -139,11 +140,13 @@ I1 --> J1[🎁 Bon dispositifs contrôle glycémie]
 I2 --> J2[🎁 Bon produits indice glycémique bas]
 I3 --> J3[🎁 Bon abonnement sport]
 H4 --> J4[🎁 Accès interview chercheur et blog éducatif]
+H5 --> J5[🎁 Accès à des forums patients/chercheurs et groupes d'échanges locaux]
 
 J1 --> K[🏥 Amélioration Santé Patient]
 J2 --> K
 J3 --> K
 J4 --> K
+J5 --> K
 
 K --> L[📈 Plus d'Engagement Patient]
 L --> M[📊 Plus de Données Partagées]
@@ -156,6 +159,7 @@ M --> A
     style H2 fill:#B0C4DE,stroke:#000080,stroke-width:1px,color:#FFFFFF
     style H3 fill:#B0C4DE,stroke:#000080,stroke-width:1px,color:#FFFFFF
     style H4 fill:#B0C4DE,stroke:#000080,stroke-width:1px,color:#FFFFFF
+    style H5 fill:#B0C4DE,stroke:#000080,stroke-width:1px,color:#FFFFFF
     style I1 fill:#87CEEB,stroke:#000080,stroke-width:1px,color:#FFFFFF
     style I2 fill:#87CEEB,stroke:#000080,stroke-width:1px,color:#FFFFFF
     style I3 fill:#87CEEB,stroke:#000080,stroke-width:1px,color:#FFFFFF
@@ -163,6 +167,7 @@ M --> A
     style J2 fill:#00BFFF,stroke:#000080,stroke-width:1px,color:#FFFFFF
     style J3 fill:#00BFFF,stroke:#000080,stroke-width:1px,color:#FFFFFF
     style J4 fill:#00BFFF,stroke:#000080,stroke-width:1px,color:#FFFFFF
+    style J5 fill:#00BFFF,stroke:#000080,stroke-width:1px,color:#FFFFFF
     
     classDef tokenFlow fill:#4682B4,stroke:#000080,stroke-width:1px,color:#FFFFFF
     class A,B,C,F,G,K,L,M,N,X tokenFlow
