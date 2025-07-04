@@ -12,14 +12,80 @@ Cette application a pour but de permettre à des patients de charger des donnée
 
 Le contrat `MedicalConsent` est un contrat de gestion de consentements médicaux basé sur les NFTs (ERC721) en mixant le concetp de Soul Bound Token (token ayant un unique propriétaire, sans possibilité de transfert). Il permet au patient d'accorder et de révoquer (burn du token) leur consentement pour l'utilisation de leurs données médicales dans des études spécifiques.
 
-Le contrat `CercleToken` est un contrat de création de points de fidélités basé sur l'ERC20, il implémente aussi le concept de SBT (Soul Bound Tokens). Ces points de fidélité sont appellé par la suite par `CercleToken` ou `CERC`.Un montant de CercleToken est crée sur le compte du patient pour chaques téléchargements de données par les chercheurs. Ils ont de multiples cas d'usages dans l'application (accès réduction panier repas,fitness, dispositifs pharmaceutiques etc.) ce système de gestion de points est implémenté dans le contrat `CercleTokenRewards`.
+Le contrat `CercleToken` est un contrat de création de points de fidélités basé sur l'ERC20, il implémente aussi le concept de SBT (Soul Bound Tokens). Ces points de fidélité sont appellé par la suite par `CercleToken` ou `CERCLE`.Un montant de CercleToken est crée sur le compte du patient pour chaques téléchargements de données par les chercheurs. Ils ont de multiples cas d'usages dans l'application (accès réduction panier repas,fitness, dispositifs pharmaceutiques etc.) ce système de gestion de points est implémenté dans le contrat `CercleTokenRewards`.
+
+## Sécurité et mécanismes anti-abus
+
+### Limitations des récompenses
+- **Limite mensuelle** : 200 CERCLE maximum par patient par mois
+- **Calcul mensuel** : Basé sur `block.timestamp / 30 days`
+- **Reset automatique** : Les compteurs se remettent à zéro chaque nouveau mois
+- **Pas de blocage d'upload** : Les patients peuvent continuer à partager des données même après avoir atteint la limite
+
+### Soul Bound Tokens (SBT)
+- **CercleToken** : Impossible de transférer les tokens entre comptes
+- **CercleConsent** : Impossible de transférer les NFT de consentement
+- **Objectif** : Éviter la spéculation et garantir que les récompenses restent liées au patient contributeur
+
+### Contrôles d'accès
+- **Patients autorisés** : Seuls les patients enregistrés peuvent recevoir des récompenses
+- **Études autorisées** : Seules les études validées par l'administrateur peuvent collecter des consentements
+- **Pause d'urgence** : Possibilité de suspendre les contrats en cas de problème
+
+## Roadmap et améliorations futures
+
+### Phase 1 - MVP (En cours)
+- ✅ Contrats smart contracts de base
+- ✅ Système de récompenses avec limites anti-abus
+- 🔄 Interface utilisateur frontend
+- 🔄 API backend et base de données
+
+### Phase 2 - Gamification
+- 🔮 Système de badges (Bronze, Argent, Or)
+- 🔮 Défis de régularité (bonus pour 12 mois consécutifs = +200 CERCLE)
+- 🔮 Niveaux de contributeur avec avantages progressifs
+
+### Phase 3 - Écosystème étendu
+- 🔮 Groupes locaux de patients
+- 🔮 Partenariats avec CHU locaux
+- 🔮 Contenu blog éducatif (interview chercheur, responsable de recherche, article blockchain, article diabète)
+- 🔮 Retours d'études vulgarisés et personnel pour les patients (ex :  "Vos données ont amélioré un modèle de mesure de glycémie", etc.)
+- 🔮 Contenu recettes de cuisine indice glycémique abs. 
+
+## MedicalConsent
+
+### Gestion des patients
+- `registerPatient()` : Permet à un utilisateur de s'enregistrer comme patient avec un identifiant unique.
+- `isPatientRegistered(address)` : Vérifie si une adresse wallet est enregistrée comme patient.
+- `getPatientId(address)` : Récupère l'identifiant d'un patient à partir de son adresse wallet.
+- `getPatientInfo(uint256)` : Récupère les informations de base d'un patient (adresse, date d'enregistrement, statut).
+
+### Gestion des consentements
+- `selfGrantConsent(bytes32, bytes32, uint256)` : Permet à un patient d'accorder son consentement pour une étude spécifique avec une durée de validité.
+- `revokeConsent(uint256)` : Permet à un patient de révoquer un consentement précédemment accordé.
+- `isConsentValid(uint256)` : Vérifie si un consentement est valide (actif et non expiré).
+- `getConsentDetails(uint256)` : Récupère les détails d'un consentement spécifique.
+- `getPatientConsents(address)` : Récupère tous les consentements accordés par un patient.
+
+### Gestion des études
+- `authorizeStudy(bytes32, string)` : Permet au propriétaire du contrat d'autoriser une nouvelle étude.
+- `revokeStudyAuthorization(bytes32, string)` : Permet au propriétaire du contrat de révoquer l'autorisation d'une étude.
+- `isStudyAuthorized(bytes32)` : Vérifie si une étude est autorisée.
+
+### Administration du contrat
+- `pause()` : Permet au propriétaire de mettre en pause le contrat (arrête les nouvelles attributions de consentement).
+- `unpause()` : Permet au propriétaire de réactiver le contrat après une pause.
+
+## Cercle Token : points de fidélités
+
+Token récompenseant les patients pour leurs contributions et engagement.
 
 ## Economie circulaire de CercleToken :
 to do: 
 * clarifier régles anti abus (limitations annuel, mensuel) ne pas bloquer l'upload mais plus de mint de token.
 * proposition d'offres gratuites:
     - lié à l'éducation (interview chercheur, responsable de recherche, article blockchain; article diabètique)
-    - retour lié aux études qui donne un résultat vulgarisé au patient ( vos donnée ont améliorer un modèle de mesure de glycémie)
+    - retour lié aux études qui donne un résultat vulgarisé au patient ( )
     - recette adapté aux diabètique
     - Inscription Groupe Local (les contributeurs se rencontrent - cf groupe de parole -, peuvent échanger entre eux et avec les chercheurs, co animation des groupes locaux avec les CHUs locaux ?,) > Ce sera l'occasion d'ientifier des besoins spécifiques à ce type de patients, de faire remonter les besoins, échanger sur les bonnes pratiques entre les groupes, d'ajuster la gamification / les badges ...
 * gamification badge (par rank bronze, or, argent) et défi de régularité qui donne bonus token ( 12 mois donne 200 token)
@@ -29,25 +95,25 @@ graph TD
 A[📊 Patient Upload Données] --> B[🔬 Téléchargement par Chercheur]
 
 B --> N{Veut participer au système de récompense?}
-N -->|✅ Oui| C{Anti-abus OK?}
+N -->|✅ Oui| C{Limite récompenses respectée ? 200 CERCLE/mois = 4 uploads}
 N -->|❌ Non| X[❌ Pas de génération de CercleToken]
 
-C -->|✅ Première fois| D[🪙 MINT +50 CERC]
-C -->|❌ Déjà récompensé| X[❌ Pas de génération de CercleToken]
+C -->|✅ Oui| D[🪙 MINT +50 CERCLE]
+C -->|❌ Non| X[❌ Pas de génération de CercleToken]
 
-D --> E[💰 Solde Patient: +50 CERC]
+D --> E[💰 Solde Patient: +50 CERCLE]
 
 E --> F[🛒 Catalogue Récompenses]
 F --> G{Sélection récompense}
 
-G -->|🏥 Pharmacie| H1[🔥 BURN 200 CERC]
-G -->|🥗 Nutrition| H2[🔥 BURN 150 CERC]
-G -->|💪 Fitness| H3[🔥 BURN 500 CERC]
+G -->|🏥 Pharmacie| H1[🔥 BURN 200 CERCLE]
+G -->|🥗 Nutrition| H2[🔥 BURN 150 CERCLE]
+G -->|💪 Fitness| H3[🔥 BURN 500 CERCLE]
 G -->|📚 Éducation| H4[Contenu gratuit]
 
-H1 --> I1[💰 Nouveau Solde: -200 CERC]
-H2 --> I2[💰 Nouveau Solde: -150 CERC]
-H3 --> I3[💰 Nouveau Solde: -500 CERC]
+H1 --> I1[💰 Nouveau Solde: -200 CERCLE]
+H2 --> I2[💰 Nouveau Solde: -150 CERCLE]
+H3 --> I3[💰 Nouveau Solde: -500 CERCLE]
 
 
 I1 --> J1[🎁 Bon dispositifs contrôle glycémie]
@@ -163,30 +229,16 @@ sequenceDiagram
     F->>DB: Marque code réduction utilisé
 ```
 
-### MedicalConsent
+## FAQ
 
-#### Gestion des patients
-- `registerPatient()` : Permet à un utilisateur de s'enregistrer comme patient avec un identifiant unique.
-- `isPatientRegistered(address)` : Vérifie si une adresse wallet est enregistrée comme patient.
-- `getPatientId(address)` : Récupère l'identifiant d'un patient à partir de son adresse wallet.
-- `getPatientInfo(uint256)` : Récupère les informations de base d'un patient (adresse, date d'enregistrement, statut).
+**Q: Que se passe-t-il si j'atteins la limite mensuelle de 200 CERCLE ?**
+R: Vous pouvez continuer à partager vos données, mais vous ne recevrez plus de nouveaux tokens jusqu'au mois suivant.
 
-#### Gestion des consentements
-- `selfGrantConsent(bytes32, bytes32, uint256)` : Permet à un patient d'accorder son consentement pour une étude spécifique avec une durée de validité.
-- `revokeConsent(uint256)` : Permet à un patient de révoquer un consentement précédemment accordé.
-- `isConsentValid(uint256)` : Vérifie si un consentement est valide (actif et non expiré).
-- `getConsentDetails(uint256)` : Récupère les détails d'un consentement spécifique.
-- `getPatientConsents(address)` : Récupère tous les consentements accordés par un patient.
+**Q: Puis-je transférer mes CERCLE à un autre patient ?**
+R: Non, les CERCLE sont des Soul Bound Tokens liés à votre compte uniquement.
 
-#### Gestion des études
-- `authorizeStudy(bytes32, string)` : Permet au propriétaire du contrat d'autoriser une nouvelle étude.
-- `revokeStudyAuthorization(bytes32, string)` : Permet au propriétaire du contrat de révoquer l'autorisation d'une étude.
-- `isStudyAuthorized(bytes32)` : Vérifie si une étude est autorisée.
+**Q: Comment puis-je révoquer mon consentement ?**
+R: Vous pouvez révoquer votre consentement à tout moment via l'interface, ce qui détruira le NFT correspondant et la disponibilité de vos données pour les études liées. L'application est conforme à la RGPD.
 
-#### Administration du contrat
-- `pause()` : Permet au propriétaire de mettre en pause le contrat (arrête les nouvelles attributions de consentement).
-- `unpause()` : Permet au propriétaire de réactiver le contrat après une pause.
-
-## Cercle Token : points de fidélités
-
-Token récompenseant les patients pour leurs contributions et engagement.
+**Q: Les données sont-elles anonymisées ?**
+R: Oui, seul un hash des données est stocké sur la blockchain. Les données réelles sont stockées de manière sécurisée et anonymisée chez un hébergeur certifié HDS (Hébergeur de Données de Santé).
