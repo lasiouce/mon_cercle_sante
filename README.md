@@ -27,7 +27,10 @@ Le système de récompenses automatique est basé sur la limite mensuelle de 200
 
 ### Phase 2 - Gamification
 - 🔮 Système de badges (Bronze, Argent, Or)
-- 🔮 Défis de régularité (bonus pour 12 mois consécutifs = +200 CERCLE)
+- 🔮 Défis de régularité :
+    - 12 mois consécutifs = +200 CERCLE
+    - 6 mois consécutifs = +100 CERCLE
+    - 3 mois consécutifs = +50 CERCLE
 - 🔮 Niveaux de contributeur avec avantages progressifs
 
 ### Phase 3 - Écosystème étendu
