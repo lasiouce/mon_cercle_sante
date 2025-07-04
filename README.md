@@ -10,18 +10,19 @@
 
 ## Présentation
 
-Cette application a pour but de permettre à des patients de charger des données médicales et de les partager avec des chercheurs afin de participer à des recherches sur le diabète, tout en garantissant leur confidentialité et leur protection.
+Cette application a pour but de permettre à des patients de charger des données médicales et de les partager avec des chercheurs afin de participer à des recherches sur le diabète, tout en garantissant leur confidentialité et leur protection. L'application vise à proposer du contenu éducatif, des interactions communautaires ainsi que des réductions sur des produits favorisant la prévention du diabète.
 
-Le contrat [Consent](backend/contracts/Consent.sol) est un contrat de gestion de consentements médicaux basé sur les NFTs (ERC721) en mixant le concetp de Soul Bound Token (token ayant un unique propriétaire, sans possibilité de transfert). Il permet au patient d'accorder et de révoquer (burn du token) leur consentement pour l'utilisation de leurs données médicales dans des études spécifiques.
+Le contrat [Consent](backend/contracts/Consent.sol) est un contrat de gestion de consentements médicaux basé sur les NFTs (ERC721) en mixant le concept de Soul Bound Token (token ayant un unique propriétaire, sans possibilité de transfert). Il permet au patient d'accorder et de révoquer (burn du token) leur consentement pour l'utilisation de leurs données médicales dans des études spécifiques.
 
-Le contrat [CercleToken](backend/contracts/CercleToken.sol) est un contrat de création de points de fidélités basé sur l'ERC20, il implémente aussi le concept de SBT (Soul Bound Tokens). Ces points de fidélité sont appellé par la suite par `CERCLE`. Un montant de CercleToken est crée sur le compte du patient pour chaques téléchargements de données par les chercheurs. Ils ont de multiples cas d'usages dans l'application (accès réduction panier repas,fitness, dispositifs pharmaceutiques etc.) ce système de gestion de points est implémenté dans le contrat `CercleTokenRewards`.
+Le contrat [CercleToken](backend/contracts/CercleToken.sol) est un contrat de création de points de fidélité basé sur l'ERC20, il implémente aussi le concept de SBT (Soul Bound Tokens). Ces points de fidélité sont appelés par la suite `CERCLE`. Un montant de CercleToken est créé sur le compte du patient pour chaque téléchargement de données par les chercheurs. Ils ont de multiples cas d'usages dans l'application (accès réduction panier repas, fitness, dispositifs pharmaceutiques, etc.).
+Le système de récompenses automatique est basé sur la limite mensuelle de 200 CERCLE par patient. Chaque téléchargement de données génère 50 CERCLE. Si un patient atteint cette limite, il ne recevra plus de tokens. Cependant, il peut continuer à partager ses données sans être limité.
 
 ## Roadmap et améliorations futures
 
 ### Phase 1 - MVP (En cours)
-- ✅ Contrats smart contracts de base
-- ✅ Système de récompenses avec limites anti-abus
-- 🔄 Interface utilisateur frontend
+- ✅ Smart contracts 
+- ✅ Système de récompenses avec limites
+- 🔄 Interface utilisateur 
 - 🔄 API backend et base de données
 
 ### Phase 2 - Gamification
@@ -34,7 +35,7 @@ Le contrat [CercleToken](backend/contracts/CercleToken.sol) est un contrat de cr
 - 🔮 Contenu blog éducatif (interview chercheur, responsable de recherche, article blockchain, article diabète)
 - 🔮 Retours d'études vulgarisés et personnel pour les patients (ex :  "Vos données ont amélioré un modèle de mesure de glycémie", etc.)
 - 🔮 Contenu recettes de cuisine indice glycémique abs. 
-- 🔮 Groupes locaux de patients (les contributeurs se rencontrent - cf groupe de parole -, peuvent échanger entre eux et avec les chercheurs, co animation des groupes locaux avec les CHUs locaux ?) > Ce sera l'occasion d'ientifier des besoins spécifiques à ce type de patients, de faire remonter les besoins, échanger sur les bonnes pratiques entre les groupes, d'ajuster la gamification / les badges ...)
+- 🔮 Groupes locaux de patients (les contributeurs se rencontrent - cf groupe de parole -, peuvent échanger entre eux et avec les chercheurs, co animation des groupes locaux avec les CHUs locaux ?) > Ce sera l'occasion d'identifier des besoins spécifiques à ce type de patients, de faire remonter les besoins, échanger sur les bonnes pratiques entre les groupes, d'ajuster la gamification / les badges ...)
 - 🔮 Partenariats avec CHU locaux
 
 ## Sécurité et mécanismes anti-abus
