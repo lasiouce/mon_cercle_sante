@@ -12,9 +12,9 @@
 
 Cette application a pour but de permettre à des patients de charger des données médicales et de les partager avec des chercheurs afin de participer à des recherches sur le diabète, tout en garantissant leur confidentialité et leur protection.
 
-Le contrat `MedicalConsent` est un contrat de gestion de consentements médicaux basé sur les NFTs (ERC721) en mixant le concetp de Soul Bound Token (token ayant un unique propriétaire, sans possibilité de transfert). Il permet au patient d'accorder et de révoquer (burn du token) leur consentement pour l'utilisation de leurs données médicales dans des études spécifiques.
+Le contrat [Consent](backend/contracts/Consent.sol) est un contrat de gestion de consentements médicaux basé sur les NFTs (ERC721) en mixant le concetp de Soul Bound Token (token ayant un unique propriétaire, sans possibilité de transfert). Il permet au patient d'accorder et de révoquer (burn du token) leur consentement pour l'utilisation de leurs données médicales dans des études spécifiques.
 
-Le contrat `CercleToken` est un contrat de création de points de fidélités basé sur l'ERC20, il implémente aussi le concept de SBT (Soul Bound Tokens). Ces points de fidélité sont appellé par la suite par `CercleToken` ou `CERCLE`.Un montant de CercleToken est crée sur le compte du patient pour chaques téléchargements de données par les chercheurs. Ils ont de multiples cas d'usages dans l'application (accès réduction panier repas,fitness, dispositifs pharmaceutiques etc.) ce système de gestion de points est implémenté dans le contrat `CercleTokenRewards`.
+Le contrat [CercleToken](backend/contracts/CercleToken.sol) est un contrat de création de points de fidélités basé sur l'ERC20, il implémente aussi le concept de SBT (Soul Bound Tokens). Ces points de fidélité sont appellé par la suite par `CERCLE`. Un montant de CercleToken est crée sur le compte du patient pour chaques téléchargements de données par les chercheurs. Ils ont de multiples cas d'usages dans l'application (accès réduction panier repas,fitness, dispositifs pharmaceutiques etc.) ce système de gestion de points est implémenté dans le contrat `CercleTokenRewards`.
 
 ## Roadmap et améliorations futures
 
