@@ -3,6 +3,7 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract CercleToken is ERC20, Ownable, Pausable {
     // Mapping des adresses autorisées à mint seulement
@@ -83,11 +84,11 @@ contract CercleToken is ERC20, Ownable, Pausable {
         // Génération code unique
         redemptionCode = string(abi.encodePacked(
             "CERCLE-",
-            block.timestamp,
+            Strings.toString(block.timestamp),
             "-",
-            uint256(uint160(msg.sender)),
+            Strings.toString(uint256(uint160(msg.sender))),
             "-",
-            tokenCost
+            Strings.toString(tokenCost)
         ));
         
         recompenses[redemptionCode] = Reward({
