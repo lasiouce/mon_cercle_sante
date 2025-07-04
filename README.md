@@ -37,7 +37,7 @@ Le système de récompenses automatique est basé sur la limite mensuelle de 200
 - 🔮 Intégration avec des partenaires de recherche.
 - 🔮 Contenu blog éducatif (interview chercheur, responsable de recherche, article blockchain, article diabète)
 - 🔮 Retours d'études vulgarisés et personnel pour les patients (ex :  "Vos données ont amélioré un modèle de mesure de glycémie", etc.)
-- 🔮 Contenu recettes de cuisine indice glycémique abs. 
+- 🔮 Contenu recettes de cuisine indice glycémique bas. 
 - 🔮 Groupes locaux de patients (les contributeurs se rencontrent - cf groupe de parole -, peuvent échanger entre eux et avec les chercheurs, co animation des groupes locaux avec les CHUs locaux ?) > Ce sera l'occasion d'identifier des besoins spécifiques à ce type de patients, de faire remonter les besoins, échanger sur les bonnes pratiques entre les groupes, d'ajuster la gamification / les badges ...)
 - 🔮 Partenariats avec CHU locaux
 
