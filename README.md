@@ -262,7 +262,7 @@ R: Vous pouvez continuer à partager vos données, mais vous ne recevrez plus de
 R: Non, les CERCLE sont des Soul Bound Tokens liés à votre compte uniquement.
 
 **Q: Comment puis-je révoquer mon consentement ?**
-R: Vous pouvez révoquer votre consentement à tout moment via l'interface, ce qui détruira le NFT correspondant et la disponibilité de vos données pour les études liées. L'application est conforme à la RGPD.
+R: Vous pouvez révoquer votre consentement à tout moment via l'interface, ce qui rendra indisponible de vos données pour les études liées. L'application est conforme à la RGPD.
 
 **Q: Les données sont-elles anonymisées ?**
-R: Oui, seul un hash des données est stocké sur la blockchain. Les données réelles sont stockées de manière sécurisée et anonymisée chez un hébergeur certifié HDS (Hébergeur de Données de Santé).
+R: Oui, seul un hash de la référence des données est stocké sur la blockchain. Les données personnelles et médicales sont stockées de manière sécurisée et anonymisée chez un hébergeur certifié HDS (Hébergeur de Données de Santé).
