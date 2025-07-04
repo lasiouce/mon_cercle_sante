@@ -1,10 +1,12 @@
 # Mon Cercle Sante
 ## Table des matières
 * [Présentation](#présentation)
+* [Roadmap ](#roadmap-et-améliorations-futures)
+* [Sécurité ](#sécurité-et-mécanismes-anti-abus)
+* [Consentement de partage de donnée](#consentement-de-partage-de-donnée)
+* [CercleToken](#cercle-token--points-de-fidélités)
 * [Economie circulaire CercleToken](#economie-circulaire-de-cercletoken)
 * [Diagramme de séquence](#diagramme-de-séquence)
-* [Gestion de consentements médicaux](#medicalconsent)
-* [Génération et gestion des points fidélités](#cercle-token--points-de-fidélités)
 
 ## Présentation
 
@@ -14,7 +16,33 @@ Le contrat `MedicalConsent` est un contrat de gestion de consentements médicaux
 
 Le contrat `CercleToken` est un contrat de création de points de fidélités basé sur l'ERC20, il implémente aussi le concept de SBT (Soul Bound Tokens). Ces points de fidélité sont appellé par la suite par `CercleToken` ou `CERCLE`.Un montant de CercleToken est crée sur le compte du patient pour chaques téléchargements de données par les chercheurs. Ils ont de multiples cas d'usages dans l'application (accès réduction panier repas,fitness, dispositifs pharmaceutiques etc.) ce système de gestion de points est implémenté dans le contrat `CercleTokenRewards`.
 
+## Roadmap et améliorations futures
+
+### Phase 1 - MVP (En cours)
+- ✅ Contrats smart contracts de base
+- ✅ Système de récompenses avec limites anti-abus
+- 🔄 Interface utilisateur frontend
+- 🔄 API backend et base de données
+
+### Phase 2 - Gamification
+- 🔮 Système de badges (Bronze, Argent, Or)
+- 🔮 Défis de régularité (bonus pour 12 mois consécutifs = +200 CERCLE)
+- 🔮 Niveaux de contributeur avec avantages progressifs
+
+### Phase 3 - Écosystème étendu
+- 🔮 Intégration avec des partenaires de recherche.
+- 🔮 Contenu blog éducatif (interview chercheur, responsable de recherche, article blockchain, article diabète)
+- 🔮 Retours d'études vulgarisés et personnel pour les patients (ex :  "Vos données ont amélioré un modèle de mesure de glycémie", etc.)
+- 🔮 Contenu recettes de cuisine indice glycémique abs. 
+- 🔮 Groupes locaux de patients (les contributeurs se rencontrent - cf groupe de parole -, peuvent échanger entre eux et avec les chercheurs, co animation des groupes locaux avec les CHUs locaux ?) > Ce sera l'occasion d'ientifier des besoins spécifiques à ce type de patients, de faire remonter les besoins, échanger sur les bonnes pratiques entre les groupes, d'ajuster la gamification / les badges ...)
+- 🔮 Partenariats avec CHU locaux
+
 ## Sécurité et mécanismes anti-abus
+
+### Identité protégée
+- **RGPD** : Respect de la réglementation en matière de protection des données personnelles
+- **Base de donnée HDS** : Stockage sécurisé et anonymisé des données
+- **Sécurité des données** : Seul un hash de référence vers une base de donnée est stocké sur la blockchain, ce qui garantit la confidentialité des données. 
 
 ### Limitations des récompenses
 - **Limite mensuelle** : 200 CERCLE maximum par patient par mois
@@ -32,27 +60,7 @@ Le contrat `CercleToken` est un contrat de création de points de fidélités ba
 - **Études autorisées** : Seules les études validées par l'administrateur peuvent collecter des consentements
 - **Pause d'urgence** : Possibilité de suspendre les contrats en cas de problème
 
-## Roadmap et améliorations futures
-
-### Phase 1 - MVP (En cours)
-- ✅ Contrats smart contracts de base
-- ✅ Système de récompenses avec limites anti-abus
-- 🔄 Interface utilisateur frontend
-- 🔄 API backend et base de données
-
-### Phase 2 - Gamification
-- 🔮 Système de badges (Bronze, Argent, Or)
-- 🔮 Défis de régularité (bonus pour 12 mois consécutifs = +200 CERCLE)
-- 🔮 Niveaux de contributeur avec avantages progressifs
-
-### Phase 3 - Écosystème étendu
-- 🔮 Groupes locaux de patients
-- 🔮 Partenariats avec CHU locaux
-- 🔮 Contenu blog éducatif (interview chercheur, responsable de recherche, article blockchain, article diabète)
-- 🔮 Retours d'études vulgarisés et personnel pour les patients (ex :  "Vos données ont amélioré un modèle de mesure de glycémie", etc.)
-- 🔮 Contenu recettes de cuisine indice glycémique abs. 
-
-## MedicalConsent
+## Consentement de partage de donnée
 
 ### Gestion des patients
 - `registerPatient()` : Permet à un utilisateur de s'enregistrer comme patient avec un identifiant unique.
@@ -62,10 +70,12 @@ Le contrat `CercleToken` est un contrat de création de points de fidélités ba
 
 ### Gestion des consentements
 - `selfGrantConsent(bytes32, bytes32, uint256)` : Permet à un patient d'accorder son consentement pour une étude spécifique avec une durée de validité.
-- `revokeConsent(uint256)` : Permet à un patient de révoquer un consentement précédemment accordé.
-- `isConsentValid(uint256)` : Vérifie si un consentement est valide (actif et non expiré).
-- `getConsentDetails(uint256)` : Récupère les détails d'un consentement spécifique.
-- `getPatientConsents(address)` : Récupère tous les consentements accordés par un patient.
+- `revokeConsent(uint256 consentId, uint256 patientId)` : Permet à un patient de révoquer un consentement précédemment accordé.
+- `isConsentValid(uint256 tokenId, uint256 patientId)` : Vérifie si un consentement est valide (actif et non expiré).
+- `getConsentDetails(uint256 tokenId, uint256 patientId)` : Récupère les détails d'un consentement spécifique.
+- `getPatientConsents(uint256 patientId)` : Récupère tous les consentements accordés par un patient.
+- `getPatientConsentCount(uint256 patientId)` : Récupère le nombre de consentements d'un patient.
+- `totalSupply()` : Récupère le nombre total de consentements actifs.
 
 ### Gestion des études
 - `authorizeStudy(bytes32, string)` : Permet au propriétaire du contrat d'autoriser une nouvelle étude.
@@ -78,17 +88,22 @@ Le contrat `CercleToken` est un contrat de création de points de fidélités ba
 
 ## Cercle Token : points de fidélités
 
-Token récompenseant les patients pour leurs contributions et engagement.
+### Récompenses automatiques
+- `rewardForDataDownload(address patient, bytes32 datasetHash)` : Attribue 50 CERCLE pour un téléchargement de données.
+- `MONTHLY_MINT_LIMIT` : Constante fixée à 200 CERCLE par mois.
 
-## Economie circulaire de CercleToken :
-to do: 
-* clarifier régles anti abus (limitations annuel, mensuel) ne pas bloquer l'upload mais plus de mint de token.
-* proposition d'offres gratuites:
-    - lié à l'éducation (interview chercheur, responsable de recherche, article blockchain; article diabètique)
-    - retour lié aux études qui donne un résultat vulgarisé au patient ( )
-    - recette adapté aux diabètique
-    - Inscription Groupe Local (les contributeurs se rencontrent - cf groupe de parole -, peuvent échanger entre eux et avec les chercheurs, co animation des groupes locaux avec les CHUs locaux ?,) > Ce sera l'occasion d'ientifier des besoins spécifiques à ce type de patients, de faire remonter les besoins, échanger sur les bonnes pratiques entre les groupes, d'ajuster la gamification / les badges ...
-* gamification badge (par rank bronze, or, argent) et défi de régularité qui donne bonus token ( 12 mois donne 200 token)
+### Échange de récompenses
+- `redeemReward(uint256 tokenCost, string rewardType)` : Permet d'échanger des tokens contre des récompenses.
+
+### Administration
+- `setAuthorizedPatient(address patient, bool authorized)` : Autorise un patient à recevoir des récompenses.
+- `pause()` / `unpause()` : Contrôle de l'état du contrat.
+
+### Propriétés Soul Bound Token
+- `isSoulBound()` : Retourne `true` (les tokens ne peuvent pas être transférés).
+- `canTransfer()` : Retourne `false` (les transferts sont interdits).
+
+### Economie circulaire de CercleToken
 
 ```mermaid
 graph TD
