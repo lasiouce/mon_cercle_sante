@@ -5,7 +5,15 @@ import "@nomicfoundation/hardhat-toolbox";
 // const ETHERSCAN_API_KEY = vars.get("ETHERSCAN_API_KEY");
 // const SEPOLIA_PK = vars.get("SEPOLIA_PK");
 const config: HardhatUserConfig = {
-  solidity: "0.8.28",
+  solidity: {
+    version: "0.8.28",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
+    },
+  },
   networks: {
    /**  sepolia: {
       url: `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}}`,
