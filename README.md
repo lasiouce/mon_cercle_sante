@@ -159,7 +159,7 @@ M --> A
     style I1 fill:#87CEEB,stroke:#000080,stroke-width:1px,color:#FFFFFF
     style I2 fill:#87CEEB,stroke:#000080,stroke-width:1px,color:#FFFFFF
     style I3 fill:#87CEEB,stroke:#000080,stroke-width:1px,color:#FFFFFF
-    style J1 fill:#00BFFF,stroke:#000080,stroke-width:1px,color:#FFFFFFAdd commentMore actions
+    style J1 fill:#00BFFF,stroke:#000080,stroke-width:1px,color:#FFFFFF
     style J2 fill:#00BFFF,stroke:#000080,stroke-width:1px,color:#FFFFFF
     style J3 fill:#00BFFF,stroke:#000080,stroke-width:1px,color:#FFFFFF
     style J4 fill:#00BFFF,stroke:#000080,stroke-width:1px,color:#FFFFFF
