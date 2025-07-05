@@ -20,10 +20,10 @@ Le système de récompenses automatique est basé sur la limite mensuelle de 200
 ## Roadmap et améliorations futures
 
 ### Phase 1 - MVP (En cours)
-- ✅ Smart contracts 
-- ✅ Système de récompenses avec limites
-- 🔄 Interface utilisateur 
+- ✅ Smart contracts Consentement et CercleToken
 - 🔄 API backend et base de données
+- 🔄 Interface utilisateur 
+
 
 ### Phase 2 - Gamification
 - 🔮 Système de badges (Bronze, Argent, Or)
