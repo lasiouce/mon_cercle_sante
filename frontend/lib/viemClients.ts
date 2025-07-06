@@ -1,8 +1,8 @@
 import { createPublicClient, http } from 'viem';
-import { sepolia } from 'viem/chains';
-import { urlRpcPolygonAmoy,localhostNode } from '../constants';
+import { hardhat } from 'viem/chains';
+import { localhostNode } from '../constants';
 
 export const publicClient = createPublicClient({
-  chain: sepolia,
+  chain: hardhat,
   transport: http(localhostNode)
 }); 

@@ -7,7 +7,6 @@ import {
 } from '@rainbow-me/rainbowkit';
 import { WagmiProvider } from 'wagmi';
 import {
-  sepolia,
   hardhat
 } from 'wagmi/chains';
 import {
