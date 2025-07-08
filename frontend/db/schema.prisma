@@ -8,19 +8,24 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  }
+}
+
+enum DiabeteType {
+  TYPE_1 @map("Type 1")
+  TYPE_2 @map("Type 2")
+}
 
 model Patient {
-  id            Int      @id
-  walletAddress String   @unique @db.Char(42)
-  firstName     String   @db.VarChar(50)
-  lastName      String   @db.VarChar(50)
-  email         String?  @db.VarChar(255)
-  birthYear     Int?     @db.Integer
-  weightKg      Decimal? @db.Decimal(5,2)
-  sex           String?  @db.Char(1)
-  diabeteType   String?  @db.VarChar(50)
-  createdAt     DateTime @default(now()) @db.Timestamptz
+  id            Int          @id
+  walletAddress String       @unique @db.Char(42)
+  firstName     String       @db.VarChar(50)
+  lastName      String       @db.VarChar(50)
+  email         String?      @db.VarChar(255)
+  birthYear     Int?         @db.Integer
+  weightKg      Decimal?     @db.Decimal(5,2)
+  sex           String?      @db.Char(1)
+  diabeteType   DiabeteType?
+  createdAt     DateTime     @default(now()) @db.Timestamptz
   
   // Relations
   datasetReferences DatasetReference[]
