@@ -18,7 +18,11 @@ interface ProfileFormData {
   sex: string;
 }
 
-export default function ProfileForm() {
+interface ProfileFormProps {
+  onSuccess?: () => void;
+}
+
+export default function ProfileForm({ onSuccess }: ProfileFormProps = {}) {
   const { address } = useAccount();
   const [step, setStep] = useState<'blockchain' | 'profile'>('blockchain');
   const [blockchainPatientId, setBlockchainPatientId] = useState<number | null>(null);
@@ -62,7 +66,9 @@ export default function ProfileForm() {
 
       if (response.ok) {
         toast.success('Profil enregistré avec succès!');
-        // Redirection vers le dashboard
+        if (onSuccess) {
+          onSuccess();
+        }
         window.location.href = '/patient/dashboard';
       } else {
         const errorData = await response.json();
