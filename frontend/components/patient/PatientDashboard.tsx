@@ -4,7 +4,7 @@ import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, FileText, Settings, Home, User, Calendar, Weight, Mail } from 'lucide-react';
+import { Upload, FileText, Settings, User, Calendar, Weight, Mail } from 'lucide-react';
 
 interface PatientInfo {
   id: number;
@@ -182,13 +182,13 @@ export default function PatientDashboard() {
               <h2 className="text-xl font-semibold text-gray-900">Mes Données</h2>
             </div>
             <p className="text-gray-600 mb-4">
-              Uploadez et gérez vos données médicales en toute sécurité.
+              Charger vos données médicales en toute sécurité.
             </p>
             <Button 
               onClick={() => router.push('/patient/upload')}
               className="w-full"
             >
-              Gérer mes données
+              Charger
             </Button>
           </div>
 
