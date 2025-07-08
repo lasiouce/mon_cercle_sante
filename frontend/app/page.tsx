@@ -1,8 +1,8 @@
 'use client';
 import NotConnected from "@/components/shared/NotConnected";
-import Cercle from "@/components/shared/Cercle";
 
 import { useAccount } from "wagmi";
+import HomePage from "@/components/shared/HomePage";
 
 export default function Home() {
 
@@ -12,5 +12,5 @@ export default function Home() {
     return <NotConnected />;
   }
 
-  return <Cercle />;
+  return <HomePage />;
 }

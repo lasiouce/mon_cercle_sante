@@ -739,7 +739,7 @@ export const tokenContractABI = [
       "stateMutability": "nonpayable",
       "type": "function"
     }
-  ]
+  ] as const
 export const consentContractABI = [
     {
       "inputs": [],
@@ -1818,4 +1818,4 @@ export const consentContractABI = [
       "stateMutability": "nonpayable",
       "type": "function"
     }
-  ]
+  ] as const

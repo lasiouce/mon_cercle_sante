@@ -1,0 +1,127 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  }
+
+model Patient {
+  id            Int      @id
+  walletAddress String   @unique @db.Char(42)
+  firstName     String   @db.VarChar(50)
+  lastName      String   @db.VarChar(50)
+  email         String?  @db.VarChar(255)
+  birthYear     Int?     @db.Integer
+  weightKg      Decimal? @db.Decimal(5,2)
+  sex           String?  @db.Char(1)
+  diabeteType   String?  @db.VarChar(50)
+  createdAt     DateTime @default(now()) @db.Timestamptz
+  
+  // Relations
+  datasetReferences DatasetReference[]
+
+  @@index([walletAddress], map: "idx_patient_wallet_address")
+  @@map("patient")
+}
+
+model Researcher {
+  id            String   @id @default(uuid()) @db.Uuid
+  walletAddress String   @unique @db.Char(42)
+  firstName     String   @db.VarChar(100)
+  lastName      String   @db.VarChar(100)
+  institution   String?  @db.VarChar(255)
+  email         String?  @db.VarChar(255)
+  createdAt     DateTime @default(now()) @db.Timestamptz
+  
+  // Relations
+  createdStudies Study[] @relation("StudyCreator")
+  researcherStudies ResearcherStudy[]
+
+  @@index([walletAddress], map: "idx_researcher_wallet")
+  @@map("researcher")
+}
+
+model Study {
+  id          String   @id @db.VarChar(66) 
+  description String?  @db.Text
+  protocolUrl String?  @db.VarChar(512)
+  isApproved  Boolean  @default(false)
+  createdBy   String   @db.Uuid
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  
+  // Relations
+  creator           Researcher @relation("StudyCreator", fields: [createdBy], references: [id])
+  researcherStudies ResearcherStudy[]
+  datasetReferences DatasetReference[]
+  blockchainSyncs   BlockchainSync[]
+  
+  @@map("study")
+}
+
+// Table de jointure Many-to-Many
+model ResearcherStudy {
+  researcherId String @db.Uuid
+  studyId      String @db.VarChar(66) // Changed from Bytes to String
+  role         String @db.VarChar(50)
+  
+  // Relations
+  researcher Researcher @relation(fields: [researcherId], references: [id])
+  study      Study      @relation(fields: [studyId], references: [id])
+  
+  @@id([researcherId, studyId])
+  @@map("researcher_study")
+}
+
+// Modèle DatasetReference adapté du script SQL
+model DatasetReference {
+  datasetHash String   @id @db.VarChar(66) 
+  patientId   Int      @db.Integer
+  studyId     String   @db.VarChar(66) 
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  
+  // Relations
+  patient      Patient @relation(fields: [patientId], references: [id])
+  study        Study   @relation(fields: [studyId], references: [id])
+  measurements Measurement[]
+  
+  @@index([patientId], map: "idx_dataset_patient")
+  @@map("dataset_reference")
+}
+
+// Modèle Measurement adapté du script SQL
+model Measurement {
+  id              Int      @id @default(autoincrement())
+  datasetHash     String   @db.VarChar(66) 
+  measurementType String   @db.VarChar(10)
+  value           Decimal  @db.Decimal(10,2)
+  timestamp       DateTime @db.Timestamptz
+  mealContext     String?  @db.VarChar(15)
+  labName         String?  @db.VarChar(100)
+  deviceModel     String?  @db.VarChar(50)
+  
+  // Relations
+  datasetReference DatasetReference @relation(fields: [datasetHash], references: [datasetHash])
+  
+  @@index([measurementType], map: "idx_measurement_type")
+  @@map("measurement")
+}
+
+// Modèle BlockchainSync adapté du script SQL
+model BlockchainSync {
+  id          Int      @id @default(autoincrement())
+  studyId     String   @db.VarChar(66) 
+  txHash      String   @db.Char(66)
+  action      String   @db.VarChar(10)
+  blockNumber Int      @db.Integer
+  executedAt  DateTime @default(now()) @db.Timestamptz
+  
+  // Relations
+  study Study @relation(fields: [studyId], references: [id])
+  
+  @@map("blockchain_sync")
+}

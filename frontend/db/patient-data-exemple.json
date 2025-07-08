@@ -1,0 +1,25 @@
+{
+  "patient_info": {
+    "wallet_address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+    "pseudonym": "dia_user42",
+    "email": "user@example.com",
+    "birth_year": 1985,
+    "weight_kg": 70.5,
+    "sex": "M"
+  },
+  "measurements": [
+    {
+      "type": "glucose",
+      "value": 95.2,
+      "timestamp": "2023-11-25T08:00:00Z",
+      "meal_context": "fasting",
+      "device_model": "FreeStyle Libre"
+    },
+    {
+      "type": "hba1c",
+      "value": 6.5,
+      "timestamp": "2023-11-01T00:00:00Z",
+      "lab_name": "LabCorp"
+    }
+  ]
+}
