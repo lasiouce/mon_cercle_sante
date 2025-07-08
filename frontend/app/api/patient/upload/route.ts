@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 // Schéma de validation pour les mesures
 const measurementSchema = z.object({
   patientId: z.number().int().positive(),
-  studyId: z.string().min(1),
+  studyId: z.number().min(1),
   measurements: z.array(z.object({
     measurementType: z.enum(['GLUCOSE', 'INSULIN', 'HBA1C', 'WEIGHT', 'BMI']),
     value: z.number().positive(),

@@ -11,7 +11,7 @@ import { Plus, Trash2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Study {
-  id: string;
+  id: number;
   description: string;
   creator: {
     firstName: string;
@@ -40,7 +40,7 @@ export default function MeasurementUpload() {
   const { address } = useAccount();
   const [studies, setStudies] = useState<Study[]>([]);
   const [patientInfo, setPatientInfo] = useState<PatientInfo | null>(null);
-  const [selectedStudyId, setSelectedStudyId] = useState<string>('');
+  const [selectedStudyId, setSelectedStudyId] = useState<number | ''>('');
   const [measurements, setMeasurements] = useState<Measurement[]>([{
     id: '1',
     measurementType: '',
@@ -140,7 +140,7 @@ export default function MeasurementUpload() {
       
       const payload = {
         patientId: patientInfo.id,
-        studyId: selectedStudyId,
+        studyId: Number(selectedStudyId), // Conversion explicite en number
         measurements: validMeasurements.map(m => ({
           measurementType: m.measurementType,
           value: Number(m.value),
@@ -222,13 +222,13 @@ export default function MeasurementUpload() {
             {/* Sélection de l'étude */}
             <div className="space-y-2">
               <Label htmlFor="study">Étude de destination *</Label>
-              <Select value={selectedStudyId} onValueChange={setSelectedStudyId}>
+              <Select value={selectedStudyId.toString()} onValueChange={(value) => setSelectedStudyId(Number(value))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionnez une étude" />
                 </SelectTrigger>
                 <SelectContent>
                   {studies.map((study) => (
-                    <SelectItem key={study.id} value={study.id}>
+                    <SelectItem key={study.id} value={study.id.toString()}>
                       <div>
                         <div className="font-medium">{study.description}</div>
                         <div className="text-sm text-gray-500">

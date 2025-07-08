@@ -52,7 +52,7 @@ model Researcher {
 }
 
 model Study {
-  id          String   @id @db.VarChar(66) 
+  id          Int      @id @default(autoincrement())
   description String?  @db.Text
   protocolUrl String?  @db.VarChar(512)
   isApproved  Boolean  @default(false)
@@ -71,7 +71,7 @@ model Study {
 // Table de jointure Many-to-Many
 model ResearcherStudy {
   researcherId String @db.Uuid
-  studyId      String @db.VarChar(66) // Changed from Bytes to String
+  studyId      Int    @db.Integer
   role         String @db.VarChar(50)
   
   // Relations
@@ -82,14 +82,12 @@ model ResearcherStudy {
   @@map("researcher_study")
 }
 
-// Modèle DatasetReference adapté du script SQL
 model DatasetReference {
   datasetHash String   @id @db.VarChar(66) 
   patientId   Int      @db.Integer
-  studyId     String   @db.VarChar(66) 
+  studyId     Int      @db.Integer
   createdAt   DateTime @default(now()) @db.Timestamptz
   
-  // Relations
   patient      Patient @relation(fields: [patientId], references: [id])
   study        Study   @relation(fields: [studyId], references: [id])
   measurements Measurement[]
@@ -98,7 +96,6 @@ model DatasetReference {
   @@map("dataset_reference")
 }
 
-// Modèle Measurement adapté du script SQL
 model Measurement {
   id              Int      @id @default(autoincrement())
   datasetHash     String   @db.VarChar(66) 
@@ -109,23 +106,20 @@ model Measurement {
   labName         String?  @db.VarChar(100)
   deviceModel     String?  @db.VarChar(50)
   
-  // Relations
   datasetReference DatasetReference @relation(fields: [datasetHash], references: [datasetHash])
   
   @@index([measurementType], map: "idx_measurement_type")
   @@map("measurement")
 }
 
-// Modèle BlockchainSync adapté du script SQL
 model BlockchainSync {
   id          Int      @id @default(autoincrement())
-  studyId     String   @db.VarChar(66) 
+  studyId     Int      @db.Integer
   txHash      String   @db.Char(66)
   action      String   @db.VarChar(10)
   blockNumber Int      @db.Integer
   executedAt  DateTime @default(now()) @db.Timestamptz
   
-  // Relations
   study Study @relation(fields: [studyId], references: [id])
   
   @@map("blockchain_sync")
