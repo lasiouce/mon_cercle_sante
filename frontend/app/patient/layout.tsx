@@ -20,7 +20,8 @@ export default function PatientLayout({
     if (pathname.includes('/consent')) return 'Consentement';
     if (pathname.includes('/dashboard')) return 'Tableau de bord';
     if (pathname.includes('/profile')) return 'Profil';
-    if (pathname.includes('/upload')) return 'Upload';
+    if (pathname.includes('/upload')) return 'Chargement de donnée';
+     if (pathname.includes('/edit-profile')) return 'Edition profil';
     return 'Accueil';
   };
 

@@ -220,7 +220,7 @@ export default function PatientDashboard() {
               Modifiez vos informations personnelles et préférences.
             </p>
             <Button 
-              onClick={() => router.push('/patient/settings')}
+              onClick={() => router.push('/patient/edit-profile')}
               className="w-full"
               variant="outline"
             >
