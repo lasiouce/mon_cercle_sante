@@ -3,13 +3,12 @@ pragma solidity 0.8.28;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Pausable.sol";
 
 /// @title CercleConsent NFT Contract
 /// @author lasiouce (https://github.com/lasiouce)  
 /// @notice This contract manages medical consent as NFTs for patients participating in medical studies
 /// @dev Implements ERC721 standard with additional functionality for consent management
-contract CercleConsent is ERC721, Ownable, Pausable {
+contract CercleConsent is ERC721, Ownable {
     
     /// @notice Structure to store consent data
     /// @dev Contains all relevant information about a specific consent
@@ -23,18 +22,20 @@ contract CercleConsent is ERC721, Ownable, Pausable {
         bool isActive;            /// @notice Flag indicating if the consent is currently active
     }
 
+    /// @notice Structure to store patient information
+    /// @dev Contains all relevant information about a specific patient
     struct Patient {
-        address walletAddress;        // Adresse du portefeuille du patient
-        uint256 patientId;            // ID unique du patient
-        uint256 registrationDate;     // Date d'enregistrement
-        bool isActive;                // Statut actif/inactif
-        mapping(uint256 => ConsentData) consents;    // Consentements du patient
-        uint256[] consentIds;   // Identifiants des tokens de consentement du patient
+        address walletAddress;        /// @notice The wallet address of the patient
+        uint256 patientId;            /// @notice Unique identifier for the patient
+        uint256 registrationDate;     /// @notice Timestamp when the patient was registered
+        bool isActive;                /// @notice Flag indicating if the patient is currently active
+        mapping(uint256 => ConsentData) consents;    /// @notice Mapping of consent IDs to consent data for this patient
+        uint256[] consentIds;   /// @notice Array of consent token IDs owned by this patient
     }
 
     /// @notice Maps patient IDs to Patient structures
     mapping(uint256 => Patient) public patients;
-    /// @notice Mapping d'accès rapide par adresse
+    /// @notice Quick access mapping from wallet address to patient ID
     mapping(address => uint256) public addressToPatientId;
     /// @notice Maps study IDs to authorization status
     mapping(bytes32 => bool) private _authorizedStudies;
@@ -47,46 +48,46 @@ contract CercleConsent is ERC721, Ownable, Pausable {
     
     // ============ CUSTOM ERRORS ============
     
-    /// @notice Erreur levée quand une étude n'est pas autorisée
+    /// @notice Error thrown when a study is not authorized
     error StudyNotAuthorized();
     
-    /// @notice Erreur levée quand un patient n'est pas enregistré
+    /// @notice Error thrown when a patient is not registered
     error PatientNotRegistered();
     
-    /// @notice Erreur levée quand une adresse est déjà enregistrée
+    /// @notice Error thrown when an address is already registered
     error AddressAlreadyRegistered();
     
-    /// @notice Erreur levée quand un ID de patient n'existe pas
+    /// @notice Error thrown when a patient ID does not exist
     error PatientIdDoesNotExist();
     
-    /// @notice Erreur levée quand une adresse de patient est invalide
+    /// @notice Error thrown when a patient address is invalid
     error InvalidPatientAddress();
     
-    /// @notice Erreur levée quand le hash du dataset est requis
+    /// @notice Error thrown when dataset hash is required
     error DatasetHashRequired();
     
-    /// @notice Erreur levée quand la durée de validité est requise
+    /// @notice Error thrown when validity duration is required
     error ValidityDurationRequired();
     
-    /// @notice Erreur levée quand seul le propriétaire peut révoquer
+    /// @notice Error thrown when only the owner can revoke
     error OnlyOwnerCanRevoke();
     
-    /// @notice Erreur levée quand le consentement est déjà révoqué
+    /// @notice Error thrown when consent is already revoked
     error ConsentAlreadyRevoked();
     
-    /// @notice Erreur levée quand un token n'existe pas
+    /// @notice Error thrown when a token does not exist
     error TokenDoesNotExist();
     
-    /// @notice Erreur levée quand un ID d'étude est requis
+    /// @notice Error thrown when study ID is required
     error StudyIdRequired();
     
-    /// @notice Erreur levée quand une étude n'est pas autorisée pour la révocation
+    /// @notice Error thrown when a study is not authorized for revocation
     error StudyNotAuthorizedForRevocation();
     
-    /// @notice Erreur levée quand les approbations sont interdites (Soul Bound Token)
+    /// @notice Error thrown when approvals are disabled (Soul Bound Token)
     error ApprovalsDisabled();
     
-    /// @notice Erreur levée quand les transferts sont interdits (Soul Bound Token)
+    /// @notice Error thrown when transfers are disabled (Soul Bound Token)
     error TransfersDisabled();
     
     /// @notice Emitted when a patient is registered
@@ -133,9 +134,8 @@ contract CercleConsent is ERC721, Ownable, Pausable {
         _;
     }
     
-    /// @notice Initializes the contract with the specified owner
-    /// @param initialOwner The address of the initial owner of the contract
-    constructor(address initialOwner) ERC721("CercleConsent", "CERCONSENT") Ownable(initialOwner) {}
+    /// @notice Constructor for the CercleConsent contract
+    constructor() ERC721("CercleConsent", "CERCONSENT") Ownable(msg.sender) {}
     
     /// @notice Registers a new patient with a unique patient ID
     /// @dev Creates a bidirectional mapping between the patient's address and ID
@@ -201,7 +201,7 @@ contract CercleConsent is ERC721, Ownable, Pausable {
         bytes32 datasetHash,
         bytes32 studyId,
         uint256 validityDuration
-    ) external whenNotPaused onlyValidStudy(studyId) returns (uint256) {
+    ) external onlyValidStudy(studyId) returns (uint256) {
         if (msg.sender == address(0)) revert InvalidPatientAddress();
         if (datasetHash == bytes32(0)) revert DatasetHashRequired();
         if (validityDuration == 0) revert ValidityDurationRequired();
@@ -228,6 +228,7 @@ contract CercleConsent is ERC721, Ownable, Pausable {
     
     /// @notice Allows a patient to revoke a previously granted consent
     /// @param consentId The ID of the consent token to revoke
+    /// @param patientId The ID of the patient revoking the consent
     function revokeConsent(uint256 consentId, uint256 patientId) external {
         if (ownerOf(consentId) != msg.sender) revert OnlyOwnerCanRevoke();
         ConsentData storage consent = patients[patientId].consents[consentId];
@@ -236,11 +237,11 @@ contract CercleConsent is ERC721, Ownable, Pausable {
         consent.isActive = false;
         consent.revokedAt = block.timestamp;
 
-        // Supprimer de la liste des IDs 
+        // Remove from the IDs list
         uint256[] storage consentIds = patients[patientId].consentIds;
         for (uint256 i = 0; i < consentIds.length; i++) {
             if (consentIds[i] == consentId) {
-            // Swap and pop pour économiser du gaz
+            // Swap and pop to save gas
             consentIds[i] = consentIds[consentIds.length - 1];
             consentIds.pop();
             break;
@@ -313,14 +314,6 @@ contract CercleConsent is ERC721, Ownable, Pausable {
         return _authorizedStudies[studyId];
     }
     
-    /// @notice Pauses the contract
-    /// @dev Can only be called by the contract owner
-    function pause() external onlyOwner { _pause(); }
-    
-    /// @notice Unpauses the contract
-    /// @dev Can only be called by the contract owner
-    function unpause() external onlyOwner { _unpause(); }
-    
     /// @dev Checks if a token exists
     /// @param tokenId The ID of the token to check
     /// @return True if the token exists, false otherwise
@@ -328,37 +321,41 @@ contract CercleConsent is ERC721, Ownable, Pausable {
         return _ownerOf(tokenId) != address(0);
     }
     
-    /// @notice Soul Bound Token - Les approbations sont interdites
+    /// @notice Soul Bound Token - Approvals are disabled
     function approve(address, uint256) public pure override {
         revert ApprovalsDisabled();
     }
     
-    /// @notice Soul Bound Token - Les approbations pour tous sont interdites
+    /// @notice Soul Bound Token - Approval for all is disabled
     function setApprovalForAll(address, bool) public pure override {
         revert ApprovalsDisabled();
     }
     
-    /// @notice Soul Bound Token - Aucune approbation n'est possible
+    /// @notice Soul Bound Token - No approvals are possible
     function getApproved(uint256) public pure override returns (address) {
         return address(0);
     }
     
-    /// @notice Soul Bound Token - Aucune approbation pour tous n'est possible
+    /// @notice Soul Bound Token - No approval for all is possible
     function isApprovedForAll(address, address) public pure override returns (bool) {
         return false;
     }
 
-    /// @notice Override _update pour bloquer tous les transferts (Soul Bound Token)
-    /// @dev Cette fonction est appelée par toutes les opérations de transfert
+    /// @notice Override _update to block all transfers (Soul Bound Token)
+    /// @dev This function is called by all transfer operations
+    /// @param to The address to transfer to
+    /// @param tokenId The ID of the token to transfer
+    /// @param auth The address authorized to perform the transfer
+    /// @return The previous owner of the token
     function _update(address to, uint256 tokenId, address auth) internal override returns (address) {
         address from = _ownerOf(tokenId);
         
-        // Permettre le minting (from == address(0))
+        // Allow minting (from == address(0))
         if (from == address(0)) {
             return super._update(to, tokenId, auth);
         }
         
-        // Bloquer tous les autres transferts
+        // Block all other transfers
         revert TransfersDisabled();
     }
 }

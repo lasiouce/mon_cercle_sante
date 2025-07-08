@@ -147,20 +147,6 @@ describe("CercleToken", function () {
       await expect(cercleToken.connect(patient1).rewardForDataDownload(patient2.address, datasetHash))
         .to.be.revertedWithCustomError(cercleToken, "NotAuthorizedPatient");
     });
-
-    it("Should respect pause functionality", async function () {
-      const { cercleToken, owner, patient1, datasetHash } = await deployWithAuthorizedPatients();
-      
-      await cercleToken.connect(owner).pause();
-      
-      await expect(cercleToken.connect(patient1).rewardForDataDownload(patient1.address, datasetHash))
-        .to.be.revertedWithCustomError(cercleToken, "EnforcedPause");
-      
-      await cercleToken.connect(owner).unpause();
-      
-      await expect(cercleToken.connect(patient1).rewardForDataDownload(patient1.address, datasetHash))
-        .to.emit(cercleToken, "TokensMinted");
-    });
   });
 
   describe("Reward redemption", function () {
@@ -235,31 +221,17 @@ describe("CercleToken", function () {
 
   describe("Soul Bound Token implementation", function () {
     it("Should prevent all transfer operations", async function () {
-      const { cercleToken, patient1, patient2 } = await deployAuthorizedPatientsWithTokens();
-      
-      const transferTests = [
-        {
-          name: "transfer",
-          operation: () => cercleToken.connect(patient1).transfer(patient2.address, 10)
-        },
-        {
-          name: "transferFrom",
-          operation: () => cercleToken.connect(patient1).transferFrom(patient1.address, patient2.address, 10)
-        }
-      ];
-
-      for (const test of transferTests) {
-        await expect(test.operation())
+      const { cercleToken, patient1, patient2 } = await deployAuthorizedPatientsWithTokens(); 
+        await expect(cercleToken.connect(patient1).transferFrom(patient1.address, patient2.address, 10))
+         .to.be.revertedWithCustomError(cercleToken, "AllowanceDisabled");
+        await expect(cercleToken.connect(patient1).transfer(patient2.address, 10))
           .to.be.revertedWithCustomError(cercleToken, "TransfersDisabled");
-      }
     });
 
     it("Should prevent all approval operations", async function () {
       const { cercleToken, patient1, patient2 } = await deployAuthorizedPatientsWithTokens();
-      
       await expect(cercleToken.connect(patient1).approve(patient2.address, 10))
         .to.be.revertedWithCustomError(cercleToken, "ApprovalsDisabled");
-      
       await expect(cercleToken.connect(patient1).allowance(patient1.address, patient2.address))
         .to.be.revertedWithCustomError(cercleToken, "AllowanceDisabled");
     });
@@ -280,50 +252,10 @@ describe("CercleToken", function () {
   });
 
   describe("Administrative features", function () {
-    it("Should handle pause and unpause functionality", async function () {
-      const { cercleToken, owner, patient1 } = await deployCercleTokenFixture();
-      
-      // Test pause
-      await expect(cercleToken.connect(owner).pause())
-        .to.emit(cercleToken, "Paused")
-        .withArgs(owner.address);
-      
-      expect(await cercleToken.paused()).to.be.true;
-      
-      // Test unpause
-      await expect(cercleToken.connect(owner).unpause())
-        .to.emit(cercleToken, "Unpaused")
-        .withArgs(owner.address);
-      
-      expect(await cercleToken.paused()).to.be.false;
-      
-      // Test unauthorized pause
-      await expect(cercleToken.connect(patient1).pause())
-        .to.be.revertedWithCustomError(cercleToken, "OwnableUnauthorizedAccount");
-    });
-
     it("Should restrict administrative functions to owner only", async function () {
       const { cercleToken, patient1 } = await deployCercleTokenFixture();
-      
-      const adminTests = [
-        {
-          name: "setAuthorizedPatient",
-          operation: () => cercleToken.connect(patient1).setAuthorizedPatient(patient1.address, true)
-        },
-        {
-          name: "pause",
-          operation: () => cercleToken.connect(patient1).pause()
-        },
-        {
-          name: "unpause",
-          operation: () => cercleToken.connect(patient1).unpause()
-        }
-      ];
-
-      for (const test of adminTests) {
-        await expect(test.operation())
+        await expect(cercleToken.connect(patient1).setAuthorizedPatient(patient1.address, true))
           .to.be.revertedWithCustomError(cercleToken, "OwnableUnauthorizedAccount");
-      }
     });
   });
 

@@ -19,7 +19,7 @@ describe("MedicalConsentNFT", function () {
     const patient2 = signers[2];
 
     const ConsentFactory = await ethers.getContractFactory("CercleConsent");
-    const consentContract = await ConsentFactory.deploy(owner.address) as CercleConsent;
+    const consentContract = await ConsentFactory.deploy() as CercleConsent;
 
     const studyId = ethers.keccak256(ethers.toUtf8Bytes("Study1"));
     const studyName = "Clinical study on diabetes";
@@ -274,49 +274,6 @@ describe("MedicalConsentNFT", function () {
       
       const isValid = await consentContract.isConsentValid(tokenId, patientId);
       expect(isValid).to.be.false;
-    });
-  });
-
-  describe("Administrative features", function () {
-    it("Should handle contract pause and unpause functionality", async function () {
-      const { consentContract, owner, patient1, datasetHash, studyId } = await deployConsentFixture();
-      
-      // Test pause functionality
-      await consentContract.connect(owner).pause();
-      
-      // Patient registration should still work when paused (not protected by whenNotPaused)
-      await consentContract.connect(patient1).registerPatient();
-      const isRegistered = await consentContract.isPatientRegistered(patient1.address);
-      expect(isRegistered).to.be.true;
-      
-      // Consent granting should fail when paused
-      const validityDuration = 60 * 60 * 24 * 30;
-      await expect(consentContract.connect(patient1).selfGrantConsent(
-        datasetHash,
-        studyId,
-        validityDuration
-      )).to.be.revertedWithCustomError(consentContract, "EnforcedPause");
-      
-      // Test unpause
-      await consentContract.connect(owner).unpause();
-      
-      // Should work after unpause
-      await consentContract.connect(patient1).selfGrantConsent(
-        datasetHash,
-        studyId,
-        validityDuration
-      );
-      
-      const patientId = await consentContract.getPatientId(patient1.address);
-      const patientConsents = await consentContract.getPatientConsents(patientId);
-      expect(patientConsents.length).to.equal(1);
-    });
-
-    it("Should restrict administrative functions to owner only", async function () {
-      const { consentContract, patient1 } = await deployConsentFixture();
-      
-      await expect(consentContract.connect(patient1).pause())
-        .to.be.revertedWithCustomError(consentContract, "OwnableUnauthorizedAccount");
     });
   });
 

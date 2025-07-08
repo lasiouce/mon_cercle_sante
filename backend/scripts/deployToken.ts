@@ -8,7 +8,7 @@ import "@nomicfoundation/hardhat-ethers";
 async function main(): Promise<void> {
 
   // Déploiement du contrat Bank 
-  const Consent = await ethers.deployContract("Consent");
+  const CercleToken = await ethers.deployContract("CercleToken");
   console.log(`Déploiement en cours...`);
 
   // Détection de l'environnement (local ou autre)
@@ -18,17 +18,17 @@ async function main(): Promise<void> {
   // Si l'environnement n'est pas localhost, attendre 5 blocs avant la vérification
   if (!isLocalhost) {
     console.log("Attente de 5 blocs avant vérification...");
-    await Consent.deploymentTransaction()?.wait(5);
+    await CercleToken.deploymentTransaction()?.wait(5);
   }
 
   // Affichage de l'adresse à laquelle le contrat a été déployé
-  console.log(`Contrat déployé à : ${Consent.target}`);
+  console.log(`Contrat déployé à : ${CercleToken.target}`);
 
   // Si l'environnement n'est pas localhost et qu'une clé Etherscan est disponible
   if (!isLocalhost && hasEtherscanKey) {
     console.log("Vérification du contrat sur l'explorateur...");
     // Appel de la fonction de vérification avec l'adresse du contrat et les arguments
-    await verify(Consent.target.toString());
+    await verify(CercleToken.target.toString());
   }
 }
 
