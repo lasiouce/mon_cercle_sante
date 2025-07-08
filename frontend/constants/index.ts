@@ -1,4 +1,5 @@
-export const contractAddress = "0x4Db7d44649eD52053957Cd3C7b5fcDE57ed3138b";
+export const consentContractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+export const tokenContractAddress = "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512";
 export const urlRpcPolygonAmoy = "https://polygon-amoy.g.alchemy.com/v2/o6Hp0nN7BsMWK-qH0wbWJkoArhCS_kIy"
 export const localhostNode =  "https://127.0.0.1:8545"
 
@@ -102,16 +103,6 @@ export const tokenContractABI = [
         }
       ],
       "name": "ERC20InvalidSpender",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "EnforcedPause",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "ExpectedPause",
       "type": "error"
     },
     {
@@ -258,19 +249,6 @@ export const tokenContractABI = [
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        }
-      ],
-      "name": "Paused",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
           "indexed": true,
           "internalType": "address",
           "name": "patient",
@@ -359,19 +337,6 @@ export const tokenContractABI = [
         }
       ],
       "name": "Transfer",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        }
-      ],
-      "name": "Unpaused",
       "type": "event"
     },
     {
@@ -577,26 +542,6 @@ export const tokenContractABI = [
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "pause",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "paused",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "string",
@@ -732,12 +677,12 @@ export const tokenContractABI = [
       "inputs": [
         {
           "internalType": "address",
-          "name": "",
+          "name": "to",
           "type": "address"
         },
         {
           "internalType": "uint256",
-          "name": "",
+          "name": "value",
           "type": "uint256"
         }
       ],
@@ -749,24 +694,24 @@ export const tokenContractABI = [
           "type": "bool"
         }
       ],
-      "stateMutability": "pure",
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "inputs": [
         {
           "internalType": "address",
-          "name": "",
+          "name": "from",
           "type": "address"
         },
         {
           "internalType": "address",
-          "name": "",
+          "name": "to",
           "type": "address"
         },
         {
           "internalType": "uint256",
-          "name": "",
+          "name": "value",
           "type": "uint256"
         }
       ],
@@ -778,7 +723,7 @@ export const tokenContractABI = [
           "type": "bool"
         }
       ],
-      "stateMutability": "pure",
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -793,24 +738,11 @@ export const tokenContractABI = [
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "unpause",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
     }
   ]
 export const consentContractABI = [
     {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "initialOwner",
-          "type": "address"
-        }
-      ],
+      "inputs": [],
       "stateMutability": "nonpayable",
       "type": "constructor"
     },
@@ -935,16 +867,6 @@ export const consentContractABI = [
         }
       ],
       "name": "ERC721NonexistentToken",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "EnforcedPause",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "ExpectedPause",
       "type": "error"
     },
     {
@@ -1179,19 +1101,6 @@ export const consentContractABI = [
       "anonymous": false,
       "inputs": [
         {
-          "indexed": false,
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        }
-      ],
-      "name": "Paused",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
           "indexed": true,
           "internalType": "bytes32",
           "name": "studyId",
@@ -1249,19 +1158,6 @@ export const consentContractABI = [
         }
       ],
       "name": "Transfer",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        }
-      ],
-      "name": "Unpaused",
       "type": "event"
     },
     {
@@ -1676,26 +1572,6 @@ export const consentContractABI = [
     },
     {
       "inputs": [],
-      "name": "pause",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "paused",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
       "name": "registerPatient",
       "outputs": [],
       "stateMutability": "nonpayable",
@@ -1938,13 +1814,6 @@ export const consentContractABI = [
         }
       ],
       "name": "transferOwnership",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "unpause",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
