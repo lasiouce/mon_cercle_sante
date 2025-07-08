@@ -78,16 +78,15 @@ export default function ProfileForm({ onSuccess }: ProfileFormProps = {}) {
         if (onSuccess) {
           onSuccess();
         }
-        window.location.href = '/patient/dashboard';
       } else {
         const errorData = await response.json();
         toast.error(errorData.error || 'Erreur lors de l\'enregistrement');
+        setIsLoading(false); 
       }
     } catch (error) {
       console.error('Erreur lors de l\'enregistrement:', error);
       toast.error('Erreur lors de l\'enregistrement');
-    } finally {
-      setIsLoading(false);
+      setIsLoading(false); 
     }
   };
 
@@ -193,7 +192,14 @@ export default function ProfileForm({ onSuccess }: ProfileFormProps = {}) {
         </div>
         
         <Button type="submit" disabled={isLoading} className="w-full">
-          {isLoading ? 'Enregistrement...' : 'Finaliser l\'enregistrement'}
+          {isLoading ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              Enregistrement et vérification...
+            </>
+          ) : (
+            'Finaliser l\'enregistrement'
+          )}
         </Button>
       </form>
     </div>

@@ -21,7 +21,7 @@ const Header = () => {
                                 Mon Cercle Santé
                             </h1>
                             <p className="text-blue-100 text-sm font-medium">
-                                Plateforme de santé connectée
+                                Plateforme de santé décentralisée
                             </p>
                         </div>
                     </div>

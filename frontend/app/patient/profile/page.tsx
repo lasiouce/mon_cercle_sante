@@ -70,21 +70,53 @@ export default function PatientProfilePage() {
     setStep('profile');
   };
 
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  
   // Gérer le succès de l'enregistrement du profil
-  const handleProfileSuccess = () => {
-    // Redirection immédiate après enregistrement du profil
-    router.push('/patient/dashboard');
+  const handleProfileSuccess = async () => {
+    setIsRedirecting(true);
+    
+    // Ajouter un délai pour permettre aux vérifications de se terminer
+    try {
+      // Optionnel : vérifier que l'enregistrement est bien effectué
+      if (address) {
+        const response = await fetch(`/api/patient/wallet/${address}`);
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+          // Redirection après confirmation que tout est OK
+          setTimeout(() => {
+            router.push('/patient/dashboard');
+          }, 500); // Petit délai pour une meilleure UX
+        } else {
+          // En cas de problème, rediriger quand même après un délai
+          setTimeout(() => {
+            router.push('/patient/dashboard');
+          }, 1000);
+        }
+      } else {
+        router.push('/patient/dashboard');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la vérification finale:', error);
+      // Rediriger quand même en cas d'erreur
+      setTimeout(() => {
+        router.push('/patient/dashboard');
+      }, 1000);
+    }
   };
-
-  // Afficher un loader pendant les vérifications initiales
-  if (isCheckingBlockchain || isCheckingDatabase || step === 'loading') {
+  
+  // Afficher un loader pendant les vérifications initiales OU la redirection
+  if (isCheckingBlockchain || isCheckingDatabase || step === 'loading' || isRedirecting) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-2xl mx-auto px-4">
           <div className="bg-white rounded-lg shadow-md p-8">
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span className="ml-2 text-gray-600">Vérification du profil...</span>
+              <span className="ml-2 text-gray-600">
+                {isRedirecting ? 'Finalisation de l\'enregistrement...' : 'Vérification du profil...'}
+              </span>
             </div>
           </div>
         </div>
