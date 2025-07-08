@@ -1,12 +1,10 @@
 'use client';
 
-import { useAccount } from 'wagmi';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { User, Search, Heart, Shield, Database, Users } from 'lucide-react';
 
 export default function HomePage() {
-  const { address } = useAccount();
   const router = useRouter();
 
   const handlePatientFlow = () => {
@@ -49,15 +47,15 @@ export default function HomePage() {
               {/* Features */}
               <div className="space-y-3 mb-8 text-left">
                 <div className="flex items-center space-x-3">
-                  <Shield className="w-5 h-5 text-green-500" />
+                  <Shield className="w-5 h-5 text-blue-500" />
                   <span className="text-sm text-gray-700">Données sécurisées sur blockchain</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <Database className="w-5 h-5 text-green-500" />
+                  <Database className="w-5 h-5 text-blue-500" />
                   <span className="text-sm text-gray-700">Upload et gestion de vos données</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <Heart className="w-5 h-5 text-green-500" />
+                  <Heart className="w-5 h-5 text-blue-500" />
                   <span className="text-sm text-gray-700">Participation aux études médicales</span>
                 </div>
               </div>
@@ -80,21 +78,21 @@ export default function HomePage() {
               <h3 className="text-2xl font-bold text-gray-900 mb-4">Je suis un Chercheur</h3>
               <p className="text-gray-600 mb-8">
                 Accédez aux données anonymisées des patients, créez des études 
-                et contribuez à l'avancement de la recherche médicale.
+                et contribuez à l&apos;avancement de la recherche médicale.
               </p>
               
               {/* Features */}
               <div className="space-y-3 mb-8 text-left">
                 <div className="flex items-center space-x-3">
-                  <Users className="w-5 h-5 text-green-500" />
+                  <Users className="w-5 h-5 text-blue-500" />
                   <span className="text-sm text-gray-700">Accès aux données anonymisées</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <Search className="w-5 h-5 text-green-500" />
-                  <span className="text-sm text-gray-700">Création et gestion d'études</span>
+                  <Search className="w-5 h-5 text-blue-500" />
+                  <span className="text-sm text-gray-700">Création et gestion d&apos;études</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <Shield className="w-5 h-5 text-green-500" />
+                  <Shield className="w-5 h-5 text-blue-500" />
                   <span className="text-sm text-gray-700">Conformité RGPD garantie</span>
                 </div>
               </div>

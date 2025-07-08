@@ -6,19 +6,19 @@ const prisma = new PrismaClient();
 
 // Schéma de validation pour la mise à jour d'un patient
 const updatePatientSchema = z.object({
-  firstName: z.string().min(1).max(50).optional(),
-  lastName: z.string().min(1).max(50).optional(),
-  email: z.string().email().optional(),
-  birthYear: z.number().int().min(1900).max(new Date().getFullYear()).optional(),
-  weightKg: z.number().positive().optional(),
-  sex: z.enum(['M', 'F']).optional(),
-  diabeteType: z.enum(['TYPE_1', 'TYPE_2']).optional()
+  firstName: z.string().min(1).max(50),
+  lastName: z.string().min(1).max(50),
+  email: z.string().email(),
+  birthYear: z.number().int().min(1900).max(new Date().getFullYear()),
+  weightKg: z.number().positive(),
+  sex: z.enum(['M', 'F']),
+  diabeteType: z.enum(['TYPE_1', 'TYPE_2'])
 });
 
 // GET - Récupérer un patient par ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Attendre les paramètres avant de les utiliser
@@ -94,7 +94,7 @@ export async function GET(
 // PUT - Mettre à jour un patient
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Attendre les paramètres avant de les utiliser
@@ -180,7 +180,7 @@ export async function PUT(
 // DELETE - Supprimer un patient
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Attendre les paramètres avant de les utiliser

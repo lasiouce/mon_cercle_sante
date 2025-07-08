@@ -10,7 +10,6 @@ import { consentContractAddress, consentContractABI } from '@/constants';
 export default function PatientProfilePage() {
   const { address, isConnected } = useAccount();
   const router = useRouter();
-  const [isPatientInDatabase, setIsPatientInDatabase] = useState<boolean | null>(null);
   const [isCheckingDatabase, setIsCheckingDatabase] = useState(false);
   const [step, setStep] = useState<'loading' | 'blockchain' | 'profile' | 'complete'>('loading');
 
@@ -30,7 +29,6 @@ export default function PatientProfilePage() {
       
       // Si pas enregistré sur blockchain, pas besoin de vérifier la DB
       if (!isPatientRegistered) {
-        setIsPatientInDatabase(false);
         setStep('blockchain');
         return;
       }
@@ -41,19 +39,17 @@ export default function PatientProfilePage() {
         const data = await response.json();
         
         if (response.ok && data.success) {
-          setIsPatientInDatabase(true);
-          setStep('complete');
+          // Redirection immédiate si déjà enregistré partout
+          router.push('/patient/dashboard');
+          return;
         } else if (data.code === 'PATIENT_NOT_FOUND') {
-          setIsPatientInDatabase(false);
           setStep('profile');
         } else {
           console.error('Erreur lors de la vérification:', data.error);
-          setIsPatientInDatabase(false);
           setStep('profile');
         }
       } catch (error) {
         console.error('Erreur de connexion:', error);
-        setIsPatientInDatabase(false);
         setStep('profile');
       } finally {
         setIsCheckingDatabase(false);
@@ -61,20 +57,13 @@ export default function PatientProfilePage() {
     };
 
     checkPatientInDatabase();
-  }, [address, isPatientRegistered]);
+  }, [address, isPatientRegistered, router]);
 
   useEffect(() => {
     if (!isConnected) {
       router.push('/');
     }
   }, [isConnected, router]);
-
-  // Rediriger vers le dashboard si tout est complet
-  useEffect(() => {
-    if (step === 'complete') {
-      router.push('/patient/dashboard');
-    }
-  }, [step, router]);
 
   // Gérer le succès de l'enregistrement blockchain
   const handleBlockchainRegistrationSuccess = () => {
@@ -83,7 +72,8 @@ export default function PatientProfilePage() {
 
   // Gérer le succès de l'enregistrement du profil
   const handleProfileSuccess = () => {
-    setStep('complete');
+    // Redirection immédiate après enregistrement du profil
+    router.push('/patient/dashboard');
   };
 
   // Afficher un loader pendant les vérifications initiales

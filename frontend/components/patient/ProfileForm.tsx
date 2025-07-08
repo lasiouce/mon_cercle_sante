@@ -16,6 +16,7 @@ interface ProfileFormData {
   birthYear: number;
   weightKg: number;
   sex: string;
+  diabeteType: string;
 }
 
 interface ProfileFormProps {
@@ -32,7 +33,8 @@ export default function ProfileForm({ onSuccess }: ProfileFormProps = {}) {
     email: '',
     birthYear: 0,
     weightKg: 0,
-    sex: ''
+    sex: '',
+    diabeteType: ''
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -49,6 +51,13 @@ export default function ProfileForm({ onSuccess }: ProfileFormProps = {}) {
       return;
     }
     
+    // Validation côté client pour s'assurer que tous les champs sont remplis
+    if (!formData.firstName || !formData.lastName || !formData.email || 
+        !formData.birthYear || !formData.weightKg || !formData.sex || !formData.diabeteType) {
+      toast.error('Tous les champs sont obligatoires');
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
@@ -58,7 +67,7 @@ export default function ProfileForm({ onSuccess }: ProfileFormProps = {}) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id: blockchainPatientId, // Utiliser l'ID blockchain
+          id: blockchainPatientId,
           walletAddress: address,
           ...formData
         }),
@@ -100,7 +109,7 @@ export default function ProfileForm({ onSuccess }: ProfileFormProps = {}) {
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <Label htmlFor="firstName">Prénom</Label>
+          <Label htmlFor="firstName">Prénom *</Label>
           <Input
             id="firstName"
             value={formData.firstName}
@@ -110,7 +119,7 @@ export default function ProfileForm({ onSuccess }: ProfileFormProps = {}) {
         </div>
         
         <div>
-          <Label htmlFor="lastName">Nom</Label>
+          <Label htmlFor="lastName">Nom *</Label>
           <Input
             id="lastName"
             value={formData.lastName}
@@ -120,17 +129,18 @@ export default function ProfileForm({ onSuccess }: ProfileFormProps = {}) {
         </div>
         
         <div>
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">Email *</Label>
           <Input
             id="email"
             type="email"
             value={formData.email}
             onChange={(e) => setFormData({...formData, email: e.target.value})}
+            required
           />
         </div>
         
         <div>
-          <Label htmlFor="birthYear">Année de naissance</Label>
+          <Label htmlFor="birthYear">Année de naissance *</Label>
           <Input
             id="birthYear"
             type="number"
@@ -138,31 +148,46 @@ export default function ProfileForm({ onSuccess }: ProfileFormProps = {}) {
             max={new Date().getFullYear()}
             value={formData.birthYear || ''}
             onChange={(e) => setFormData({...formData, birthYear: e.target.value ? parseInt(e.target.value) : 0})}
+            required
           />
         </div>
         
         <div>
-          <Label htmlFor="weightKg">Poids en kg</Label>
+          <Label htmlFor="weightKg">Poids en kg *</Label>
           <Input
             id="weightKg"
             type="number"
             step="0.1"
-            min="0"
+            min="0.1"
             max="999"
             value={formData.weightKg || ''}
             onChange={(e) => setFormData({...formData, weightKg: e.target.value ? parseFloat(e.target.value) : 0})}
+            required
           />
         </div>
         
         <div>
-          <Label htmlFor="sex">Sexe (optionnel)</Label>
-          <Select onValueChange={(value) => setFormData({...formData, sex: value})}>
+          <Label htmlFor="sex">Sexe *</Label>
+          <Select value={formData.sex} onValueChange={(value) => setFormData({...formData, sex: value})} required>
             <SelectTrigger>
               <SelectValue placeholder="Sélectionnez votre sexe" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="M">Masculin</SelectItem>
               <SelectItem value="F">Féminin</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div>
+          <Label htmlFor="diabeteType">Type de diabète *</Label>
+          <Select value={formData.diabeteType} onValueChange={(value) => setFormData({...formData, diabeteType: value})} required>
+            <SelectTrigger>
+              <SelectValue placeholder="Sélectionnez votre type de diabète" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="TYPE_1">Type 1</SelectItem>
+              <SelectItem value="TYPE_2">Type 2</SelectItem>
             </SelectContent>
           </Select>
         </div>

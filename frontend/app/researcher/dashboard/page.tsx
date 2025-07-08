@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Database, Users, BarChart, Home } from 'lucide-react';
 
 export default function ResearcherDashboard() {
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
   const router = useRouter();
 
   useEffect(() => {

@@ -15,7 +15,7 @@ export default function PatientRegistration({ onRegistrationSuccess }: PatientRe
   const [isRegistering, setIsRegistering] = useState(false);
   
   // Vérifier si le patient est déjà enregistré
-  const { data: isPatientRegistered, isLoading: isCheckingRegistration, refetch: refetchRegistrationStatus } = useReadContract({
+  const { data: isPatientRegistered, isLoading: isCheckingRegistration } = useReadContract({
     address: consentContractAddress as `0x${string}`,
     abi: consentContractABI,
     functionName: 'isPatientRegistered',
@@ -105,7 +105,7 @@ export default function PatientRegistration({ onRegistrationSuccess }: PatientRe
     return (
       <div className="text-center space-y-4">
         <div className="text-blue-600 font-medium">
-          🔄 Vérification de l'état d'enregistrement...
+          🔄 Vérification de l`&apos;`état d`&apos;`enregistrement...
         </div>
       </div>
     );

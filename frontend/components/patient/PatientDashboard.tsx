@@ -17,7 +17,7 @@ interface PatientInfo {
   sex?: string;
   diabeteType?: string;
   createdAt: string;
-  datasetReferences: any[];
+  datasetReferences: [];
 }
 
 export default function PatientDashboard() {
@@ -110,14 +110,14 @@ export default function PatientDashboard() {
               <div className="bg-red-50 border border-red-200 rounded-md p-4">
                 <p className="text-red-800">{error}</p>
                 <p className="text-sm text-red-600 mt-1">
-                  Vous devez d'abord vous enregistrer comme patient.
+                  Vous devez d`&apos;`abord vous enregistrer comme patient.
                 </p>
                 <Button 
                   onClick={() => router.push('/patient/profile')}
                   className="mt-3"
                   size="sm"
                 >
-                  S'enregistrer
+                  S`&apos;`enregistrer
                 </Button>
               </div>
             ) : patientInfo ? (

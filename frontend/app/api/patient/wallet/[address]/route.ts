@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 // GET - Récupérer un patient par adresse wallet
 export async function GET(
   request: NextRequest,
-  { params }: { params: { address: string } }
+  { params }: { params: Promise<{ address: string }> }
 ) {
   try {
     // Attendre les paramètres avant de les utiliser
