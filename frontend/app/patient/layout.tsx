@@ -1,8 +1,10 @@
 'use client';
 
 import { useAccount } from 'wagmi';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Home } from 'lucide-react';
 
 export default function PatientLayout({
   children,
@@ -11,6 +13,16 @@ export default function PatientLayout({
 }) {
   const { isConnected } = useAccount();
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Fonction pour déterminer le module actuel
+  const getCurrentModule = () => {
+    if (pathname.includes('/consent')) return 'Consentement';
+    if (pathname.includes('/dashboard')) return 'Tableau de bord';
+    if (pathname.includes('/profile')) return 'Profil';
+    if (pathname.includes('/upload')) return 'Upload';
+    return 'Accueil';
+  };
 
   useEffect(() => {
     if (!isConnected) {
@@ -34,35 +46,23 @@ export default function PatientLayout({
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-semibold text-gray-900">Espace Patient</h1>
+            <div className="flex items-center">
+              <h1 className="text-xl font-semibold text-gray-900">
+                Espace Patient
+                <span className="ml-2 text-m font-normal text-gray-600">
+                  - {getCurrentModule()}
+                </span>
+              </h1>
             </div>
-            <nav className="flex space-x-4">
-              <a 
-                href="/patient/profile" 
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Profil
-              </a>
-              <a 
-                href="/patient/dashboard" 
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Tableau de bord
-              </a>
-              <a 
-                href="/patient/upload" 
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Upload
-              </a>
-              <a 
-                href="/patient/consent" 
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Consentements
-              </a>
-            </nav>
+            <div className="flex items-center">
+              <Button 
+                variant="outline" 
+                onClick={() => router.push('/')}
+                className="flex items-center space-x-2">
+                <Home className="w-4 h-4" />
+                <span>Accueil</span>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
