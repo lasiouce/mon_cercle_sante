@@ -322,7 +322,7 @@ export default function MeasurementUpload() {
                     
                     <div className="flex items-end gap-2">
                       <div className="flex-1">
-                        <Label>Modèle d`&apos;`appareil</Label>
+                        <Label>Modèle d&apos;appareil</Label>
                         <Input
                           value={measurement.deviceModel || ''}
                           onChange={(e) => updateMeasurement(measurement.id, 'deviceModel', e.target.value)}
