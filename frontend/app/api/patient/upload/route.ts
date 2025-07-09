@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { createHash } from 'crypto';
 
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     const datasetHash = `0x${createHash('sha256').update(datasetContent).digest('hex')}`;
 
     // Transaction pour créer la référence dataset et les mesures
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Créer ou récupérer la référence dataset
       let datasetReference = await tx.datasetReference.findUnique({
         where: { datasetHash }
