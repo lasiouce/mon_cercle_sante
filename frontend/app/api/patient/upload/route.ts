@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
 
       // Créer les mesures
       const createdMeasurements = await Promise.all(
-        measurements.map(measurement => 
+        measurements.map((measurement : MeasurementInput) => 
           tx.measurement.create({
             data: {
               datasetHash,

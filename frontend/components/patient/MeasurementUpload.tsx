@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Trash2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
+import DataUploadTriggerConsent from './DataUploadTriggerConsent';
 
 interface Study {
   id: number;
@@ -52,6 +53,10 @@ export default function MeasurementUpload() {
   }]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [uploadSuccess, setUploadSuccess] = useState<{
+    datasetHash: string;
+    studyId: number;
+  } | null>(null);
 
   // Charger les données initiales
   useEffect(() => {
@@ -140,7 +145,7 @@ export default function MeasurementUpload() {
       
       const payload = {
         patientId: patientInfo.id,
-        studyId: Number(selectedStudyId), // Conversion explicite en number
+        studyId: Number(selectedStudyId),
         measurements: validMeasurements.map(m => ({
           measurementType: m.measurementType,
           value: Number(m.value),
@@ -163,6 +168,13 @@ export default function MeasurementUpload() {
       
       if (data.success) {
         toast.success(`${data.measurementCount} mesure(s) sauvegardée(s) avec succès`);
+        
+        // Stocker les informations pour le consentement
+        setUploadSuccess({
+          datasetHash: data.datasetHash,
+          studyId: Number(selectedStudyId)
+        });
+        
         // Réinitialiser le formulaire
         setMeasurements([{
           id: '1',
@@ -184,6 +196,19 @@ export default function MeasurementUpload() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleConsentSuccess = () => {
+    toast.success('Processus terminé avec succès !');
+    // Supprimer le setTimeout, laisser l'utilisateur fermer manuellement
+  };
+
+  const handleCloseConsent = () => {
+    setUploadSuccess(null);
+  };
+
+  const handleConsentError = (error: string) => {
+    console.error('Erreur de consentement:', error);
   };
 
   if (isLoadingData) {
@@ -365,6 +390,16 @@ export default function MeasurementUpload() {
           </form>
         </CardContent>
       </Card>
+      {uploadSuccess && patientInfo && (
+        <DataUploadTriggerConsent
+          studyId={BigInt(uploadSuccess.studyId)}
+          datasetHash={uploadSuccess.datasetHash}
+          patientId={patientInfo.id}
+          onSuccess={handleConsentSuccess}
+          onError={handleConsentError}
+          onClose={handleCloseConsent}
+        />
+      )}
     </div>
   );
 }

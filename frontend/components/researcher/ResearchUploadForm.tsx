@@ -123,7 +123,7 @@ export default function ResearchUploadForm() {
       new URL(string);
       return true;
     } catch (error) {
-      return false;
+      return error;
     }
   };
 
@@ -239,12 +239,12 @@ export default function ResearchUploadForm() {
             <CardTitle>Autorisation sur la blockchain</CardTitle>
             <CardDescription>
               Votre étude a été créée avec succès. Comme elle est marquée comme approuvée, 
-              vous devez maintenant l'autoriser sur la blockchain.
+              vous devez maintenant l&apos;autoriser sur la blockchain.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="bg-blue-50 p-4 rounded-md mb-4">
-              <h4 className="font-medium text-blue-900 mb-2">Détails de l'étude créée :</h4>
+              <h4 className="font-medium text-blue-900 mb-2">Détails de l&apos;étude créée :</h4>
               <ul className="text-sm text-blue-800 space-y-1">
                 <li><strong>ID :</strong> {createdStudy.id}</li>
                 <li><strong>Description :</strong> {createdStudy.description}</li>
@@ -265,7 +265,7 @@ export default function ResearchUploadForm() {
                 onClick={resetForm}
                 className="w-full"
               >
-                Ignorer l'autorisation blockchain et créer une nouvelle étude
+                Ignorer l&apos;autorisation blockchain et créer une nouvelle étude
               </Button>
             </div>
           </CardContent>

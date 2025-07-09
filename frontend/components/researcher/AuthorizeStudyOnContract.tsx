@@ -45,7 +45,7 @@ export default function AuthorizeStudyOnContract({
         account: address
       });
     } catch (err) {
-      toast.error('Erreur lors de la préparation de la transaction');
+      toast.error(`Erreur lors de la préparation de la transaction: ${err}`);
       onError?.('Erreur lors de la préparation de la transaction');
     }
   };
@@ -117,7 +117,7 @@ export default function AuthorizeStudyOnContract({
           <AlertCircleIcon className="h-4 w-4 text-green-600" />
           <AlertTitle className="text-green-800">Succès</AlertTitle>
           <AlertDescription className="text-green-700">
-            L'étude a été autorisée sur la blockchain avec succès.
+            L&apos;étude a été autorisée sur la blockchain avec succès.
           </AlertDescription>
         </Alert>
       )}
