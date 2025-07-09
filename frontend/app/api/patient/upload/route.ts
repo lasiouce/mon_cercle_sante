@@ -3,6 +3,21 @@ import { Prisma, PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { createHash } from 'crypto';
 
+type MeasurementInput = {
+  measurementType: string;
+  value: number;
+  timestamp: string;
+  mealContext?: string;
+  labName?: string;
+  deviceModel?: string;
+};
+
+type MeasurementForHash = {
+  measurementType: string;
+  value: number;
+  timestamp: string;
+};
+
 const prisma = new PrismaClient();
 
 // Schéma de validation pour les mesures
@@ -60,7 +75,7 @@ export async function POST(request: NextRequest) {
     const datasetContent = JSON.stringify({
       patientId,
       studyId,
-      measurements: measurements.map(m => ({
+      measurements: measurements.map((m: MeasurementForHash) => ({
         type: m.measurementType,
         value: m.value,
         timestamp: m.timestamp

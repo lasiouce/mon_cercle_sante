@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
+type ResearcherStudyWithStudy = {
+  study: {
+    id: number;
+    description: string | null;
+    protocolUrl: string | null;
+    isApproved: boolean;
+    createdAt: Date;
+  };
+};
+
 // Schéma de validation pour l'adresse wallet
 const walletAddressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
   message: "L'adresse wallet doit être une adresse Ethereum valide"
@@ -77,7 +87,7 @@ export async function GET(request: NextRequest) {
         walletAddress: researcher.walletAddress,
         createdAt: researcher.createdAt.toISOString(),
         createdStudies: researcher.createdStudies,
-        collaborativeStudies: researcher.researcherStudies.map(rs => rs.study)
+        collaborativeStudies: researcher.researcherStudies.map((rs: ResearcherStudyWithStudy) => rs.study)
       }
     };
 
