@@ -173,7 +173,7 @@ M --> A
     class A,B,C,F,G,K,L,M,N,X tokenFlow
 ```
 
-## Diagramme de séquence :
+## Diagramme de séquence
 
 ```mermaid
 sequenceDiagram
