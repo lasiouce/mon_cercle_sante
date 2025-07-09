@@ -8,17 +8,26 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Upload, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import AuthorizeStudyOnContract from './AuthorizeStudyOnContract';
 
+interface StudyFormData {
+  description: string;
+  protocolUrl: string;
+  isApproved: boolean;
+}
 
-interface StudyFormData {         
-  description: string;  
-  protocolUrl: string;  
-  isApproved: boolean;  
+interface CreatedStudy {
+  id: number;
+  description: string;
+  protocolUrl: string | null;
+  isApproved: boolean;
 }
 
 export default function ResearchUploadForm() {
   const { address } = useAccount();
   const [isLoading, setIsLoading] = useState(false);
+  const [createdStudy, setCreatedStudy] = useState<CreatedStudy | null>(null);
+  const [showBlockchainAuth, setShowBlockchainAuth] = useState(false);
   const [formData, setFormData] = useState<StudyFormData>({
     description: '',
     protocolUrl: '',
@@ -48,12 +57,12 @@ export default function ResearchUploadForm() {
     }
 
     try {
-      setIsLoading(true);      
+      setIsLoading(true);
       const payload = {
         description: formData.description.trim(),
         protocolUrl: formData.protocolUrl.trim() || null,
         isApproved: formData.isApproved,
-        creatorAddress: address // Pour identifier le chercheur
+        creatorAddress: address
       };
       
       const response = await fetch('/api/researcher/studies', {
@@ -68,12 +77,15 @@ export default function ResearchUploadForm() {
       
       if (data.success) {
         toast.success('Étude créée avec succès!');
-        // Réinitialiser le formulaire
-        setFormData({
-          description: '',
-          protocolUrl: '',
-          isApproved: false
-        });
+        setCreatedStudy(data.study);
+        
+        // Si l'étude est approuvée, afficher le composant blockchain
+        if (formData.isApproved) {
+          setShowBlockchainAuth(true);
+        } else {
+          // Réinitialiser le formulaire si pas d'autorisation blockchain nécessaire
+          resetForm();
+        }
       } else {
         toast.error(data.error || 'Erreur lors de la création de l\'étude');
       }
@@ -86,17 +98,38 @@ export default function ResearchUploadForm() {
     }
   };
 
+  const resetForm = () => {
+    setFormData({
+      description: '',
+      protocolUrl: '',
+      isApproved: false
+    });
+    setCreatedStudy(null);
+    setShowBlockchainAuth(false);
+  };
+
+  const handleBlockchainSuccess = () => {
+    toast.success('Processus complet! Étude créée et autorisée sur la blockchain.');
+    resetForm();
+  };
+
+  const handleBlockchainError = (error: string) => {
+    toast.error(`Erreur blockchain: ${error}`);
+    // On peut choisir de garder l'étude créée même si l'autorisation blockchain échoue
+  };
+
   const isValidUrl = (string: string) => {
     try {
       new URL(string);
       return true;
     } catch (error) {
-      return error;
+      return false;
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      {/* Formulaire de création d'étude */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
@@ -118,13 +151,13 @@ export default function ResearchUploadForm() {
                 placeholder="Décrivez les objectifs, la méthodologie et les bénéfices attendus de votre étude..."
                 className="w-full min-h-[120px] p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
+                disabled={showBlockchainAuth}
               />
               <p className="text-sm text-gray-500 mt-1">
                 Description détaillée de votre étude de recherche.
               </p>
             </div>
 
-            {/* URL du protocole */}
             <div>
               <Label htmlFor="protocolUrl">URL du protocole</Label>
               <Input
@@ -134,13 +167,13 @@ export default function ResearchUploadForm() {
                 onChange={(e) => handleInputChange('protocolUrl', e.target.value)}
                 placeholder="https://exemple.com/protocole-etude.pdf"
                 maxLength={512}
+                disabled={showBlockchainAuth}
               />
               <p className="text-sm text-gray-500 mt-1">
                 Lien vers le document de protocole de l&apos;étude (maximum 512 caractères).
               </p>
             </div>
 
-            {/* Statut d'approbation */}
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
@@ -148,6 +181,7 @@ export default function ResearchUploadForm() {
                 checked={formData.isApproved}
                 onChange={(e) => handleInputChange('isApproved', e.target.checked)}
                 className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                disabled={showBlockchainAuth}
               />
               <Label htmlFor="isApproved" className="text-sm font-medium text-gray-700">
                 Étude pré-approuvée
@@ -155,9 +189,13 @@ export default function ResearchUploadForm() {
             </div>
             <p className="text-sm text-gray-500">
               Cochez cette case si l&apos;étude a déjà reçu une approbation éthique préalable.
+              {formData.isApproved && (
+                <span className="text-blue-600 font-medium">
+                  {' '}Une autorisation sur la blockchain sera requise après la création.
+                </span>
+              )}
             </p>
 
-            {/* Informations automatiques */}
             <div className="bg-gray-50 p-4 rounded-md">
               <h3 className="text-sm font-medium text-gray-700 mb-2">Informations automatiques</h3>
               <ul className="text-sm text-gray-600 space-y-1">
@@ -167,20 +205,16 @@ export default function ResearchUploadForm() {
               </ul>
             </div>
 
-            {/* Boutons d'action */}
             <div className="flex justify-end space-x-4 pt-6">
               <Button 
                 type="button" 
                 variant="outline"
-                onClick={() => setFormData({
-                  description: '',
-                  protocolUrl: '',
-                  isApproved: false
-                })}
+                onClick={resetForm}
+                disabled={isLoading}
               >
                 Réinitialiser
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading || showBlockchainAuth}>
                 {isLoading ? (
                   <div className="flex items-center space-x-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -197,6 +231,46 @@ export default function ResearchUploadForm() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Composant d'autorisation blockchain */}
+      {showBlockchainAuth && createdStudy && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Autorisation sur la blockchain</CardTitle>
+            <CardDescription>
+              Votre étude a été créée avec succès. Comme elle est marquée comme approuvée, 
+              vous devez maintenant l'autoriser sur la blockchain.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-blue-50 p-4 rounded-md mb-4">
+              <h4 className="font-medium text-blue-900 mb-2">Détails de l'étude créée :</h4>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li><strong>ID :</strong> {createdStudy.id}</li>
+                <li><strong>Description :</strong> {createdStudy.description}</li>
+                <li><strong>Statut :</strong> {createdStudy.isApproved ? 'Approuvée' : 'En attente'}</li>
+              </ul>
+            </div>
+            
+            <AuthorizeStudyOnContract
+              studyId={createdStudy.id.toString()}
+              studyName={createdStudy.description}
+              onSuccess={handleBlockchainSuccess}
+              onError={handleBlockchainError}
+            />
+            
+            <div className="mt-4 pt-4 border-t">
+              <Button 
+                variant="outline" 
+                onClick={resetForm}
+                className="w-full"
+              >
+                Ignorer l'autorisation blockchain et créer une nouvelle étude
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
