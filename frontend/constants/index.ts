@@ -1008,9 +1008,9 @@ export const consentContractABI = [
         },
         {
           "indexed": true,
-          "internalType": "bytes32",
+          "internalType": "uint256",
           "name": "studyId",
-          "type": "bytes32"
+          "type": "uint256"
         },
         {
           "indexed": false,
@@ -1045,9 +1045,9 @@ export const consentContractABI = [
         },
         {
           "indexed": true,
-          "internalType": "bytes32",
+          "internalType": "uint256",
           "name": "studyId",
-          "type": "bytes32"
+          "type": "uint256"
         },
         {
           "indexed": false,
@@ -1102,9 +1102,9 @@ export const consentContractABI = [
       "inputs": [
         {
           "indexed": true,
-          "internalType": "bytes32",
+          "internalType": "uint256",
           "name": "studyId",
-          "type": "bytes32"
+          "type": "uint256"
         },
         {
           "indexed": false,
@@ -1121,9 +1121,9 @@ export const consentContractABI = [
       "inputs": [
         {
           "indexed": true,
-          "internalType": "bytes32",
+          "internalType": "uint256",
           "name": "studyId",
-          "type": "bytes32"
+          "type": "uint256"
         },
         {
           "indexed": false,
@@ -1200,9 +1200,9 @@ export const consentContractABI = [
     {
       "inputs": [
         {
-          "internalType": "bytes32",
+          "internalType": "uint256",
           "name": "studyId",
-          "type": "bytes32"
+          "type": "uint256"
         },
         {
           "internalType": "string",
@@ -1281,9 +1281,9 @@ export const consentContractABI = [
               "type": "bytes32"
             },
             {
-              "internalType": "bytes32",
+              "internalType": "uint256",
               "name": "studyId",
-              "type": "bytes32"
+              "type": "uint256"
             },
             {
               "internalType": "uint256",
@@ -1475,9 +1475,9 @@ export const consentContractABI = [
     {
       "inputs": [
         {
-          "internalType": "bytes32",
+          "internalType": "uint256",
           "name": "studyId",
-          "type": "bytes32"
+          "type": "uint256"
         }
       ],
       "name": "isStudyAuthorized",
@@ -1605,9 +1605,9 @@ export const consentContractABI = [
     {
       "inputs": [
         {
-          "internalType": "bytes32",
+          "internalType": "uint256",
           "name": "studyId",
-          "type": "bytes32"
+          "type": "uint256"
         },
         {
           "internalType": "string",
@@ -1679,9 +1679,9 @@ export const consentContractABI = [
           "type": "bytes32"
         },
         {
-          "internalType": "bytes32",
+          "internalType": "uint256",
           "name": "studyId",
-          "type": "bytes32"
+          "type": "uint256"
         },
         {
           "internalType": "uint256",
