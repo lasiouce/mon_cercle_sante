@@ -96,7 +96,7 @@ export default function ResearcherRegistration({ onRegistrationSuccess }: Resear
             <span>Enregistrement Chercheur</span>
           </CardTitle>
           <CardDescription>
-            Complétez votre profil pour accéder à l'espace chercheur.
+            Complétez votre profil pour accéder à l&apos;espace chercheur.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -177,7 +177,7 @@ export default function ResearcherRegistration({ onRegistrationSuccess }: Resear
               <h3 className="text-sm font-medium text-gray-700 mb-2">Informations automatiques</h3>
               <ul className="text-sm text-gray-600 space-y-1">
                 <li>• <strong>Adresse wallet :</strong> {address}</li>
-                <li>• <strong>Date d'enregistrement :</strong> Sera automatiquement définie</li>
+                <li>• <strong>Date d&apos;enregistrement :</strong> Sera automatiquement définie</li>
                 <li>• <strong>ID unique :</strong> Sera généré automatiquement</li>
               </ul>
             </div>
@@ -192,7 +192,7 @@ export default function ResearcherRegistration({ onRegistrationSuccess }: Resear
               ) : (
                 <div className="flex items-center space-x-2">
                   <UserPlus className="w-4 h-4" />
-                  <span>S'enregistrer</span>
+                  <span>S&apos;enregistrer</span>
                 </div>
               )}
             </Button>

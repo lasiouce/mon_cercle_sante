@@ -2,7 +2,7 @@
 
 import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Database, Users, BarChart, Home } from 'lucide-react';
 import ResearcherRegistration from '@/components/researcher/ResearcherRegistration';
@@ -34,16 +34,7 @@ export default function ResearcherDashboard() {
   const [isCheckingDatabase, setIsCheckingDatabase] = useState(false);
   const [needsRegistration, setNeedsRegistration] = useState(false);
 
-  useEffect(() => {
-    if (!isConnected) {
-      router.push('/');
-      return;
-    }
-    
-    checkResearcherInDatabase();
-  }, [isConnected, address, router]);
-
-  const checkResearcherInDatabase = async () => {
+  const checkResearcherInDatabase = useCallback(async () => {
     if (!address) return;
     
     setIsCheckingDatabase(true);
@@ -64,7 +55,16 @@ export default function ResearcherDashboard() {
     } finally {
       setIsCheckingDatabase(false);
     }
-  };
+  }, [address]);
+
+  useEffect(() => {
+    if (!isConnected) {
+      router.push('/');
+      return;
+    }
+    
+    checkResearcherInDatabase();
+  }, [isConnected, router, checkResearcherInDatabase]);
 
   const handleRegistrationSuccess = () => {
     setNeedsRegistration(false);

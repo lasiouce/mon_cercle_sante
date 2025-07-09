@@ -32,16 +32,6 @@ export default function ResearchUploadForm() {
     }));
   };
 
-  const generateStudyId = () => {
-    // Génère un ID unique pour l'étude (max 66 caractères)
-    const timestamp = Date.now().toString();
-    const randomSuffix = Math.random().toString(36).substring(2, 8);
-    const studyId = `study_${timestamp}_${randomSuffix}`;
-    
-    // S'assurer que l'ID ne dépasse pas 66 caractères
-    return studyId.substring(0, 66);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -100,8 +90,8 @@ export default function ResearchUploadForm() {
     try {
       new URL(string);
       return true;
-    } catch (_) {
-      return false;
+    } catch (error) {
+      return error;
     }
   };
 
@@ -120,7 +110,7 @@ export default function ResearchUploadForm() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <Label htmlFor="description">Description de l'étude *</Label>
+              <Label htmlFor="description">Description de l&apos;étude *</Label>
               <textarea
                 id="description"
                 value={formData.description}
@@ -146,7 +136,7 @@ export default function ResearchUploadForm() {
                 maxLength={512}
               />
               <p className="text-sm text-gray-500 mt-1">
-                Lien vers le document de protocole de l'étude (maximum 512 caractères).
+                Lien vers le document de protocole de l&apos;étude (maximum 512 caractères).
               </p>
             </div>
 
@@ -164,7 +154,7 @@ export default function ResearchUploadForm() {
               </Label>
             </div>
             <p className="text-sm text-gray-500">
-              Cochez cette case si l'étude a déjà reçu une approbation éthique préalable.
+              Cochez cette case si l&apos;étude a déjà reçu une approbation éthique préalable.
             </p>
 
             {/* Informations automatiques */}
@@ -199,7 +189,7 @@ export default function ResearchUploadForm() {
                 ) : (
                   <div className="flex items-center space-x-2">
                     <FileText className="w-4 h-4" />
-                    <span>Créer l'étude</span>
+                    <span>Créer l&apos;étude</span>
                   </div>
                 )}
               </Button>
