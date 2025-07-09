@@ -15,7 +15,7 @@ contract CercleConsent is ERC721, Ownable {
     struct ConsentData {
         uint256 consentId;        /// @notice Unique identifier for the consent
         bytes32 datasetHash;      /// @notice Hash of the dataset the consent applies to
-        bytes32 studyId;          /// @notice Identifier of the study
+        uint256 studyId;          /// @notice Identifier of the study
         uint256 validUntil;       /// @notice Timestamp until which the consent is valid
         uint256 createdAt;        /// @notice Timestamp when the consent was created
         uint256 revokedAt;        /// @notice Timestamp when the consent was revoked
@@ -38,7 +38,7 @@ contract CercleConsent is ERC721, Ownable {
     /// @notice Quick access mapping from wallet address to patient ID
     mapping(address => uint256) public addressToPatientId;
     /// @notice Maps study IDs to authorization status
-    mapping(bytes32 => bool) private _authorizedStudies;
+    mapping(uint256 => bool) private _authorizedStudies;
     /// @notice Total number of active consent tokens
     uint256 private _totalConsents;
     /// @notice Next token ID to be assigned
@@ -101,28 +101,28 @@ contract CercleConsent is ERC721, Ownable {
     /// @param studyId The ID of the study for which consent is granted
     /// @param datasetHash The hash of the dataset covered by the consent
     /// @param validUntil The timestamp until which the consent is valid
-    event ConsentGranted(uint256 indexed tokenId, uint256 indexed patientId, bytes32 indexed studyId, bytes32 datasetHash, uint256 validUntil);
+    event ConsentGranted(uint256 indexed tokenId, uint256 indexed patientId, uint256 indexed studyId, bytes32 datasetHash, uint256 validUntil);
     
     /// @notice Emitted when a consent is revoked
     /// @param tokenId The ID of the revoked consent token
     /// @param patientId The ID of the patient revoking consent
     /// @param studyId The ID of the study for which consent is revoked
     /// @param revokedAt The timestamp when the consent was revoked
-    event ConsentRevoked(uint256 indexed tokenId, uint256 indexed patientId, bytes32 indexed studyId, uint256 revokedAt);
+    event ConsentRevoked(uint256 indexed tokenId, uint256 indexed patientId, uint256 indexed studyId, uint256 revokedAt);
     
     /// @notice Emitted when a study is authorized
     /// @param studyId The ID of the authorized study
     /// @param studyName The name of the study
-    event StudyAuthorized(bytes32 indexed studyId, string studyName);
+    event StudyAuthorized(uint256 indexed studyId, string studyName);
     
     /// @notice Emitted when a study authorization is revoked
     /// @param studyId The ID of the study whose authorization is revoked
     /// @param studyName The name of the study
-    event StudyRevoked(bytes32 indexed studyId, string studyName);
+    event StudyRevoked(uint256 indexed studyId, string studyName);
 
     /// @notice Ensures that the study is authorized
     /// @param studyId The ID of the study to check
-    modifier onlyValidStudy(bytes32 studyId) {
+    modifier onlyValidStudy(uint256 studyId) {
         if (!_authorizedStudies[studyId]) revert StudyNotAuthorized();
         _;
     }
@@ -199,7 +199,7 @@ contract CercleConsent is ERC721, Ownable {
     /// @return The ID of the newly created consent token
     function selfGrantConsent(
         bytes32 datasetHash,
-        bytes32 studyId,
+        uint256 studyId,
         uint256 validityDuration
     ) external onlyValidStudy(studyId) returns (uint256) {
         if (msg.sender == address(0)) revert InvalidPatientAddress();
@@ -292,8 +292,8 @@ contract CercleConsent is ERC721, Ownable {
     /// @notice Authorizes a study to collect consents
     /// @param studyId The ID of the study to authorize
     /// @param studyName The name of the study
-    function authorizeStudy(bytes32 studyId, string memory studyName) external {
-        if (studyId == bytes32(0)) revert StudyIdRequired();
+    function authorizeStudy(uint studyId, string memory studyName) external {
+        if (studyId == uint(0)) revert StudyIdRequired();
         _authorizedStudies[studyId] = true;
         emit StudyAuthorized(studyId, studyName);
     }
@@ -301,7 +301,7 @@ contract CercleConsent is ERC721, Ownable {
     /// @notice Revokes the authorization of a study
     /// @param studyId The ID of the study whose authorization to revoke
     /// @param studyName The name of the study
-    function revokeStudyAuthorization(bytes32 studyId, string memory studyName) external {
+    function revokeStudyAuthorization(uint256 studyId, string memory studyName) external {
         if (!_authorizedStudies[studyId]) revert StudyNotAuthorizedForRevocation();
         _authorizedStudies[studyId] = false;
         emit StudyRevoked(studyId, studyName);
@@ -310,7 +310,7 @@ contract CercleConsent is ERC721, Ownable {
     /// @notice Checks if a study is authorized
     /// @param studyId The ID of the study to check
     /// @return True if the study is authorized, false otherwise
-    function isStudyAuthorized(bytes32 studyId) external view returns (bool) {
+    function isStudyAuthorized(uint256 studyId) external view returns (bool) {
         return _authorizedStudies[studyId];
     }
     
