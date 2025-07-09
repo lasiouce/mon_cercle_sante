@@ -1,7 +1,5 @@
-import React from 'react'
+import PatientConsents from '@/components/patient/PatientConsents';
 
-export default function page() {
-  return (
-    <div>page</div>
-  )
+export default function PatientConsentsPage() {
+  return <PatientConsents />;
 }

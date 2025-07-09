@@ -202,7 +202,7 @@ export default function PatientDashboard() {
               Consultez et gérez vos consentements pour les études de recherche.
             </p>
             <Button 
-              onClick={() => router.push('/patient/consents')}
+              onClick={() => router.push('/patient/consent')}
               className="w-full"
               variant="outline"
             >
