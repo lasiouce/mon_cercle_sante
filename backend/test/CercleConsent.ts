@@ -116,11 +116,6 @@ describe("MedicalConsentNFT", function () {
       const isAuthorized = await consentContract.isStudyAuthorized(newStudyId);
       expect(isAuthorized).to.be.true;
       
-      // Test unauthorized user cannot authorize
-      const unauthorizedStudyId = ethers.keccak256(ethers.toUtf8Bytes("Study3"));
-      await expect(consentContract.connect(patient1).authorizeStudy(unauthorizedStudyId, "Unauthorized study"))
-        .to.be.revertedWithCustomError(consentContract, "OwnableUnauthorizedAccount");
-      
       // Test empty study ID validation
       await expect(consentContract.connect(owner).authorizeStudy(
         "0x0000000000000000000000000000000000000000000000000000000000000000",

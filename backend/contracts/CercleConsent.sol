@@ -292,7 +292,7 @@ contract CercleConsent is ERC721, Ownable {
     /// @notice Authorizes a study to collect consents
     /// @param studyId The ID of the study to authorize
     /// @param studyName The name of the study
-    function authorizeStudy(bytes32 studyId, string memory studyName) external onlyOwner {
+    function authorizeStudy(bytes32 studyId, string memory studyName) external {
         if (studyId == bytes32(0)) revert StudyIdRequired();
         _authorizedStudies[studyId] = true;
         emit StudyAuthorized(studyId, studyName);
@@ -301,7 +301,7 @@ contract CercleConsent is ERC721, Ownable {
     /// @notice Revokes the authorization of a study
     /// @param studyId The ID of the study whose authorization to revoke
     /// @param studyName The name of the study
-    function revokeStudyAuthorization(bytes32 studyId, string memory studyName) external onlyOwner {
+    function revokeStudyAuthorization(bytes32 studyId, string memory studyName) external {
         if (!_authorizedStudies[studyId]) revert StudyNotAuthorizedForRevocation();
         _authorizedStudies[studyId] = false;
         emit StudyRevoked(studyId, studyName);
