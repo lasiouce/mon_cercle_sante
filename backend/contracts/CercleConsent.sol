@@ -272,21 +272,21 @@ contract CercleConsent is ERC721, Ownable {
     }
     
     /// @notice Checks if a consent token is valid
-    /// @param tokenId The ID of the consent token to check
+    /// @param consentId The ID of the consent token to check
     /// @param patientId The ID of the patient
     /// @return True if the consent is valid, false otherwise
-    function isConsentValid(uint256 tokenId, uint256 patientId) external view returns (bool) {
-        if (!_exists(tokenId)) return false;
-        ConsentData memory consent = patients[patientId].consents[tokenId];
+    function isConsentValid(uint256 consentId, uint256 patientId) external view returns (bool) {
+        if (!_exists(consentId)) return false;
+        ConsentData memory consent = patients[patientId].consents[consentId];
         return consent.isActive && block.timestamp <= consent.validUntil;
     }
     
     /// @notice Gets the details of a consent token
-    /// @param tokenId The ID of the consent token to query
+    /// @param consentId The ID of the consent token to query
     /// @return The consent data associated with the token
-    function getConsentDetails(uint256 tokenId, uint256 patientId) external view returns (ConsentData memory) {
-        if (!_exists(tokenId)) revert TokenDoesNotExist();
-        return patients[patientId].consents[tokenId];
+    function getConsentDetails(uint256 consentId, uint256 patientId) external view returns (ConsentData memory) {
+        if (!_exists(consentId)) revert TokenDoesNotExist();
+        return patients[patientId].consents[consentId];
     }
     
     /// @notice Authorizes a study to collect consents
