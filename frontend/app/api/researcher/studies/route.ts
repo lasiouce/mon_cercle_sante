@@ -12,6 +12,24 @@ const createStudySchema = z.object({
   creatorAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Adresse wallet invalide')
 });
 
+
+type StudyWithDetails = {
+  id: number;
+  description: string | null;
+  protocolUrl: string | null;
+  isApproved: boolean;
+  createdAt: Date;
+  creator: {
+    firstName: string;
+    lastName: string;
+    institution: string | null;
+  };
+  _count: {
+    datasetReferences: number;
+    researcherStudies: number;
+  };
+};
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -164,7 +182,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        studies: studies.map(study => ({
+        studies: studies.map((study: StudyWithDetails) => ({
           id: study.id,
           description: study.description,
           protocolUrl: study.protocolUrl,
