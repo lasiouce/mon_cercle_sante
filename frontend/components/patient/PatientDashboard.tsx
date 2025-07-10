@@ -94,8 +94,8 @@ export default function PatientDashboard() {
                     <Coins className="w-8 h-8" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold">Mon Solde CERCLE</h2>
-                    <p className="text-blue-100">Tokens de fidélité gagnés</p>
+                    <h2 className="text-2xl font-bold">Mon solde de CERCLE</h2>
+                    <p className="text-blue-100">Points de fidélité gagnés</p>
                   </div>
                 </div>
                 <div className="text-right">
