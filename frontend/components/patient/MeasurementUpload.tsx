@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Trash2, Upload } from 'lucide-react';
+import { Plus, Trash2, Upload, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import DataUploadTriggerConsent from './DataUploadTriggerConsent';
 
@@ -39,6 +40,7 @@ interface PatientInfo {
 
 export default function MeasurementUpload() {
   const { address } = useAccount();
+  const router = useRouter();
   const [studies, setStudies] = useState<Study[]>([]);
   const [patientInfo, setPatientInfo] = useState<PatientInfo | null>(null);
   const [selectedStudyId, setSelectedStudyId] = useState<number | ''>('');
@@ -232,6 +234,19 @@ export default function MeasurementUpload() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
+      {/* Header avec bouton retour */}
+      <div className="mb-6">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => router.push('/patient/dashboard')}
+          className="mb-4"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Retour au dashboard
+        </Button>
+      </div>
+      
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
