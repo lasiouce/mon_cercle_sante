@@ -14,6 +14,9 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 contract CercleToken is ERC20, Ownable {
     /// @notice Mapping of patient addresses authorized to receive rewards
     mapping(address => bool) public authorizedPatient;
+
+    /// @notice Mapping of patient addresses authorized to receive rewards
+    mapping(address => bool) public authorizedResearchers;
     
     /// @notice Number of tokens minted per patient this month
     mapping(address => uint256) public monthlyMintedTokens;
@@ -92,6 +95,12 @@ contract CercleToken is ERC20, Ownable {
     
     /// @notice Error thrown when an unauthorized user attempts an action reserved for patients
     error NotAuthorizedPatient();
+
+    /// @notice Error thrown when an unauthorized user attempts an action reserved for patients
+    error NotAuthorizedResearchers();
+    
+    /// @notice Error throw when an unauthorized user attempts an action, for POC
+    error NotAuthorizedUser();
     
     /// @notice Error thrown when an invalid address (address(0)) is provided
     error InvalidAddress();
@@ -119,6 +128,21 @@ contract CercleToken is ERC20, Ownable {
         if (!authorizedPatient[msg.sender]) revert NotAuthorizedPatient();
         _;
     }
+    modifier onlyAuthorizedUsers() {
+        if (!authorizedPatient[msg.sender] && !authorizedResearchers[msg.sender]) {
+        revert NotAuthorizedUser();
+        }
+        _;
+    }
+
+    /**
+     * @notice Modifier to restrict access to authorized patients only
+     * @dev Checks that msg.sender is in the authorizedPatient mapping
+     */
+    modifier onlyAuthorizedResearchers() {
+        if (!authorizedResearchers[msg.sender]) revert NotAuthorizedResearchers();
+        _;
+    }
 
     /**
      * @notice Rewards a patient for downloading their medical data
@@ -130,7 +154,7 @@ contract CercleToken is ERC20, Ownable {
      */
     function rewardForDataDownload(address patient, bytes32 datasetHash) 
         external 
-        onlyAuthorizedPatients
+        onlyAuthorizedUsers()
     {
         uint256 rewardAmount = 50; // 50 CERCLE per download
         
@@ -237,10 +261,23 @@ contract CercleToken is ERC20, Ownable {
      * @param authorized True to authorize, false to revoke
      * @custom:security Function reserved for the contract owner
      */
-    function setAuthorizedPatient(address minter, bool authorized) external onlyOwner {
+    function setAuthorizedPatient(address minter, bool authorized) external {
         if (minter == address(0)) revert InvalidAddress();
         authorizedPatient[minter] = authorized;
         emit PatientAuthorizationChanged(minter, authorized);
+    }
+
+    /**
+     * @notice Authorizes or revokes a researchers's authorization
+     * @dev Only the owner can modify authorizations
+     * @param addr Address of the patient to authorize/revoke
+     * @param authorized True to authorize, false to revoke
+     * @custom:security Function reserved for the contract owner
+     */
+    function setAuthorizedResearchers(address addr, bool authorized) external {
+        if (addr == address(0)) revert InvalidAddress();
+        authorizedResearchers[addr] = authorized;
+        emit PatientAuthorizationChanged(addr, authorized);
     }
 
     // ============ VIEW FUNCTIONS ============

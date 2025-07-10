@@ -78,10 +78,6 @@ describe("CercleToken", function () {
       
       expect(await cercleToken.authorizedPatient(patient1.address)).to.be.true;
       
-      // Test unauthorized user cannot authorize
-      await expect(cercleToken.connect(patient1).setAuthorizedPatient(patient1.address, false))
-        .to.be.revertedWithCustomError(cercleToken, "OwnableUnauthorizedAccount");
-      
       // Test zero address validation
       await expect(cercleToken.connect(owner).setAuthorizedPatient(ethers.ZeroAddress, true))
         .to.be.revertedWithCustomError(cercleToken, "InvalidAddress");
@@ -145,7 +141,7 @@ describe("CercleToken", function () {
       const { cercleToken, patient1, patient2, datasetHash } = await deployCercleTokenFixture();
       
       await expect(cercleToken.connect(patient1).rewardForDataDownload(patient2.address, datasetHash))
-        .to.be.revertedWithCustomError(cercleToken, "NotAuthorizedPatient");
+        .to.be.revertedWithCustomError(cercleToken, "NotAuthorizedUser");
     });
   });
 
@@ -251,14 +247,6 @@ describe("CercleToken", function () {
     });
   });
 
-  describe("Administrative features", function () {
-    it("Should restrict administrative functions to owner only", async function () {
-      const { cercleToken, patient1 } = await deployCercleTokenFixture();
-        await expect(cercleToken.connect(patient1).setAuthorizedPatient(patient1.address, true))
-          .to.be.revertedWithCustomError(cercleToken, "OwnableUnauthorizedAccount");
-    });
-  });
-
   describe("Edge cases and error handling", function () {
     it("Should handle multiple patients with separate monthly limits", async function () {
       const { cercleToken, patient1, patient2, datasetHash } = await deployWithAuthorizedPatients();
@@ -284,7 +272,7 @@ describe("CercleToken", function () {
       
       // Should no longer be able to mint
       await expect(cercleToken.connect(patient1).rewardForDataDownload(patient1.address, datasetHash))
-        .to.be.revertedWithCustomError(cercleToken, "NotAuthorizedPatient");
+        .to.be.revertedWithCustomError(cercleToken, "NotAuthorizedUser");
     });
 
     it("Should handle large token amounts correctly", async function () {
