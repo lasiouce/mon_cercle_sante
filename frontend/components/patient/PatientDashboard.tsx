@@ -4,7 +4,8 @@ import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, FileText, Settings, User, Calendar, Weight, Mail } from 'lucide-react';
+import { Upload, FileText, Settings, User, Calendar, Weight, Mail, Coins } from 'lucide-react';
+import { useCercleBalance } from '@/hooks/useCercleBalance';
 
 interface PatientInfo {
   id: number;
@@ -26,6 +27,14 @@ export default function PatientDashboard() {
   const [patientInfo, setPatientInfo] = useState<PatientInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const { 
+    balance, 
+    isLoading: isLoadingBalance, 
+    error: balanceError, 
+    progressPercentage,
+    monthlyLimit 
+  } = useCercleBalance();
 
   useEffect(() => {
     if (!isConnected) {
@@ -76,6 +85,55 @@ export default function PatientDashboard() {
     <div className="min-h-screen bg-gray-50">
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {isConnected && (
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="bg-white/20 rounded-full p-3">
+                    <Coins className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold">Mon Solde CERCLE</h2>
+                    <p className="text-blue-100">Tokens de fidélité gagnés</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  {isLoadingBalance ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                      <span>Chargement...</span>
+                    </div>
+                  ) : balanceError ? (
+                    <div className="text-red-200">
+                      <p className="text-sm">Erreur de chargement</p>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-4xl font-bold">{balance.toLocaleString()}</p>
+                      <p className="text-blue-100">CERCLE</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Barre de progression vers la limite mensuelle */}
+              <div className="mt-4">
+                <div className="flex justify-between text-sm text-blue-100 mb-1">
+                  <span>Limite mensuelle</span>
+                  <span>{balance}/{monthlyLimit} CERCLE</span>
+                </div>
+                <div className="w-full bg-white/20 rounded-full h-2">
+                  <div 
+                    className="bg-white rounded-full h-2 transition-all duration-300" 
+                    style={{ width: `${progressPercentage}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Patient Info Section */}
         <div className="mb-8">
           <div className="bg-white rounded-lg shadow-md p-6">
@@ -93,14 +151,14 @@ export default function PatientDashboard() {
               <div className="bg-red-50 border border-red-200 rounded-md p-4">
                 <p className="text-red-800">{error}</p>
                 <p className="text-sm text-red-600 mt-1">
-                  Vous devez d`&apos;`abord vous enregistrer comme patient.
+                  Vous devez d'abord vous enregistrer comme patient.
                 </p>
                 <Button 
                   onClick={() => router.push('/patient/profile')}
                   className="mt-3"
                   size="sm"
                 >
-                  S`&apos;`enregistrer
+                  S'enregistrer
                 </Button>
               </div>
             ) : patientInfo ? (
@@ -235,6 +293,10 @@ export default function PatientDashboard() {
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Statistiques</h3>
               <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Solde CERCLE</span>
+                  <span className="font-medium text-blue-600">{balance} CERCLE</span>
+                </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Datasets partagés</span>
                   <span className="font-medium">{patientInfo.datasetReferences.length}</span>
