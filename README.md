@@ -27,7 +27,7 @@ Le système de récompenses automatique est basé sur la limite mensuelle de 200
 
 ### Phase 2 - Sécurité & Gamification
 
--  Refacto système authorisations (dashboard admin ?)
+-  Refacto système autorisation (dashboard admin ?)
 -  Sécurisé route en fonction des rôles
 -  Amélioration table pour chercheur
 - 🔮 Système de badges (Bronze, Argent, Or)
