@@ -39,8 +39,14 @@ contract CercleConsent is ERC721, Ownable {
     mapping(address => uint256) public addressToPatientId;
     /// @notice Maps study IDs to authorization status
     mapping(uint256 => bool) private _authorizedStudies;
-    /// @notice Total number of active consent tokens
+    /// @notice Maps study IDs to arrays of consent IDs
+    mapping(uint256 => uint256[]) private _studyConsents;
+    /// @notice Maps study IDs to consent count for efficient counting
+    mapping(uint256 => uint256) private _studyConsentCount;
+    /// @notice Total number of consent tokens
     uint256 private _totalConsents;
+    /// @notice Total number of active consent tokens
+    uint256 private _totalActiveConsents;
     /// @notice Next token ID to be assigned
     uint256 private _nextConsentId;       
     /// @notice Next patient ID to be assigned
@@ -208,7 +214,7 @@ contract CercleConsent is ERC721, Ownable {
         
         uint256 patientId = addressToPatientId[msg.sender];
         if (patientId == 0) revert PatientNotRegistered();
-        uint256 consentId = _nextConsentId++;
+        uint256 consentId = ++_nextConsentId;
         
         patients[patientId].consents[consentId] = ConsentData({
             consentId: consentId,
@@ -220,9 +226,12 @@ contract CercleConsent is ERC721, Ownable {
             isActive: true
         });
         patients[patientId].consentIds.push(consentId);
+        _studyConsents[studyId].push(consentId);
+        _studyConsentCount[studyId]++;
         _safeMint(msg.sender, consentId);
         ++ _totalConsents;
-        emit ConsentGranted(_nextConsentId++, patientId, studyId, datasetHash, block.timestamp + validityDuration);
+        ++ _totalActiveConsents;
+        emit ConsentGranted(consentId, patientId, studyId, datasetHash, block.timestamp + validityDuration);
         return consentId;
     }
     
@@ -233,22 +242,24 @@ contract CercleConsent is ERC721, Ownable {
         if (ownerOf(consentId) != msg.sender) revert OnlyOwnerCanRevoke();
         ConsentData storage consent = patients[patientId].consents[consentId];
         if (!consent.isActive) revert ConsentAlreadyRevoked();
-
         consent.isActive = false;
         consent.revokedAt = block.timestamp;
-
-        // Remove from the IDs list
-        uint256[] storage consentIds = patients[patientId].consentIds;
-        for (uint256 i = 0; i < consentIds.length; i++) {
-            if (consentIds[i] == consentId) {
-            // Swap and pop to save gas
-            consentIds[i] = consentIds[consentIds.length - 1];
-            consentIds.pop();
-            break;
-            }
-        }
-        -- _totalConsents;
+        _removeConsentFromStudy(consent.studyId, consentId);
+        -- _totalActiveConsents;
         emit ConsentRevoked(consentId, patientId, consent.studyId, block.timestamp);
+    }
+
+    /// @notice Gets all consents for a specific study
+    /// @param studyId The ID of the study to get consents for
+    /// @return consentDetails An array of consent data for the study
+    function getConsentsByStudy(uint256 studyId) onlyValidStudy(studyId) external view returns (
+        ConsentData[] memory consentDetails
+    ) {
+        uint256[] memory studyConsentIds = _studyConsents[studyId];
+        uint256 activeCount = _countActiveConsents(studyConsentIds);
+        consentDetails = new ConsentData[](activeCount);
+        _populateActiveConsents(studyConsentIds,  consentDetails);
+        return  consentDetails;
     }
     
     /// @notice Gets all consent tokens owned by a patientId
@@ -265,17 +276,23 @@ contract CercleConsent is ERC721, Ownable {
         return patients[patientId].consentIds.length;
     }
     
-    /// @notice Gets the total number of active consent tokens
-    /// @return The total number of active consent tokens
-    function totalSupply() external view returns (uint256) {
+    /// @notice Gets the total number of consent tokens (active and inactive)
+    /// @return The total number of consent tokens
+    function getTotalConsents() external view returns (uint256) {
         return _totalConsents;
+    }
+    
+    /// @notice Gets the total number of active consent tokens
+    /// @return The total number of active consent tokens  
+    function getTotalActiveConsents() external view returns (uint256) {
+        return _totalActiveConsents;
     }
     
     /// @notice Checks if a consent token is valid
     /// @param consentId The ID of the consent token to check
     /// @param patientId The ID of the patient
     /// @return True if the consent is valid, false otherwise
-    function isConsentValid(uint256 consentId, uint256 patientId) external view returns (bool) {
+    function isConsentValid(uint256 consentId, uint256 patientId) public view returns (bool) {
         if (!_exists(consentId)) return false;
         ConsentData memory consent = patients[patientId].consents[consentId];
         return consent.isActive && block.timestamp <= consent.validUntil;
@@ -358,4 +375,53 @@ contract CercleConsent is ERC721, Ownable {
         // Block all other transfers
         revert TransfersDisabled();
     }
+
+    function _countActiveConsents(uint256[] memory studyConsentIds) internal view returns (uint256 count) {
+        for (uint256 i = 0; i < studyConsentIds.length; i++) {
+            uint256 consentId = studyConsentIds[i];
+            address owner = _ownerOf(consentId);
+            if (owner != address(0)) {
+                uint256 patientId = addressToPatientId[owner];
+                if (isConsentValid(consentId, patientId)) {
+                    count++;
+                }
+            }
+        }
+    }
+    
+    function _populateActiveConsents(
+        uint256[] memory studyConsentIds,
+        ConsentData[] memory consentDetails
+    ) internal view {
+        uint256 index = 0;
+        for (uint256 i = 0; i < studyConsentIds.length; i++) {
+            uint256 consentId = studyConsentIds[i];
+            address owner = _ownerOf(consentId);
+            if (owner != address(0)) {
+                uint256 patientId = addressToPatientId[owner];
+                ConsentData memory consent = patients[patientId].consents[consentId];
+                if (isConsentValid(consentId, patientId)) {
+                    consentDetails[index] = consent;
+                    index++;
+                }
+            }
+        }
+    }
+
+    /// @dev Supprime un consentId du tableau _studyConsents en utilisant la technique du swap
+    function _removeConsentFromStudy(uint256 studyId, uint256 consentId) internal {
+    uint256[] storage studyConsents = _studyConsents[studyId];
+    uint256 length = studyConsents.length;
+    
+    // Trouver l'index du consentId
+    for (uint256 i = 0; i < length; i++) {
+        if (studyConsents[i] == consentId) {
+            // Remplacer par le dernier élément et supprimer le dernier
+            studyConsents[i] = studyConsents[length - 1];
+            studyConsents.pop();
+            _studyConsentCount[studyId]--;
+            break;
+        }
+    }
+}
 }

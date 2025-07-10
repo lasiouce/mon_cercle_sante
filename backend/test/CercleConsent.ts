@@ -36,7 +36,7 @@ describe("MedicalConsentNFT", function () {
     return baseFixture;
   }
 
-  async function deployWithConsentToken() {
+  async function deployWithOneConsent() {
     const baseFixture = await deployWithRegisteredPatient();
     const validityDuration = 60 * 60 * 24 * 30; // 30 days
     
@@ -165,8 +165,8 @@ describe("MedicalConsentNFT", function () {
       const consentCount = await consentContract.getPatientConsentCount(patientId);
       expect(consentCount).to.equal(1);
       
-      const totalSupply = await consentContract.totalSupply();
-      expect(totalSupply).to.equal(1);
+      const totalActiveConsents = await consentContract.getTotalActiveConsents();
+      expect(totalActiveConsents).to.equal(1);
       
       const balance = await consentContract.balanceOf(patient1.address);
       expect(balance).to.equal(1);
@@ -209,7 +209,7 @@ describe("MedicalConsentNFT", function () {
     });
 
     it("Should handle consent revocation and validation", async function () {
-      const { consentContract, patient1, patient2, tokenId, patientId } = await deployWithConsentToken();
+      const { consentContract, patient1, patient2, tokenId, patientId } = await deployWithOneConsent();
       
       // Test unauthorized revocation
       await expect(consentContract.connect(patient2).revokeConsent(tokenId, patientId))
@@ -221,16 +221,13 @@ describe("MedicalConsentNFT", function () {
       const isValid = await consentContract.isConsentValid(tokenId, patientId);
       expect(isValid).to.be.false;
       
-      const updatedConsents = await consentContract.getPatientConsents(patientId);
-      expect(updatedConsents.length).to.equal(0);
-      
       // Test double revocation
       await expect(consentContract.connect(patient1).revokeConsent(tokenId, patientId))
         .to.be.revertedWithCustomError(consentContract, "ConsentAlreadyRevoked");
     });
 
     it("Should retrieve consent details and handle edge cases", async function () {
-      const { consentContract, datasetHash, studyId, tokenId, patientId } = await deployWithConsentToken();
+      const { consentContract, datasetHash, studyId, tokenId, patientId } = await deployWithOneConsent();
       
       // Test valid consent details
       const consentDetails = await consentContract.getConsentDetails(tokenId, patientId);
@@ -274,7 +271,7 @@ describe("MedicalConsentNFT", function () {
 
   describe("Soul Bound Token (SBT) Features", function () {
     it("Should prevent all transfer operations", async function () {
-      const { consentContract, patient1, patient2, tokenId } = await deployWithConsentToken();
+      const { consentContract, patient1, patient2, tokenId } = await deployWithOneConsent();
       
       const transferTests = [
         {
@@ -310,7 +307,7 @@ describe("MedicalConsentNFT", function () {
     });
 
     it("Should prevent all approval operations and return correct values", async function () {
-      const { consentContract, patient1, patient2, tokenId } = await deployWithConsentToken();
+      const { consentContract, patient1, patient2, tokenId } = await deployWithOneConsent();
       
       // Test approval restrictions
       await expect(consentContract.connect(patient1).approve(patient2.address, tokenId))
@@ -328,7 +325,7 @@ describe("MedicalConsentNFT", function () {
     });
 
     it("Should maintain correct ownership and support ERC721 interface", async function () {
-      const { consentContract, patient1, patient2, tokenId } = await deployWithConsentToken();
+      const { consentContract, patient1, patient2, tokenId } = await deployWithOneConsent();
       
       // Test ownership
       const owner = await consentContract.ownerOf(tokenId);
@@ -382,6 +379,217 @@ describe("MedicalConsentNFT", function () {
       const consentDetails = await consentContract.getConsentDetails(firstTokenId, patientId);
       expect(consentDetails.isActive).to.be.false;
       expect(consentDetails.revokedAt).to.be.gt(0);
+    });
+  });
+  
+  describe("Consent by study", function () {
+    it("Should return empty array for study with no consents", async function () {
+      const { consentContract, studyId } = await deployConsentFixture();
+      
+      const consents = await consentContract.getConsentsByStudy(studyId);
+      expect(consents).to.be.an('array');
+      expect(consents.length).to.equal(0);
+    });
+
+    it("Should return single consent for study with one consent", async function () {
+      const { consentContract, datasetHash, studyId } = await deployWithOneConsent();
+      const consents = await consentContract.getConsentsByStudy(studyId);
+      expect(consents.length).to.equal(1);
+      const consent = consents[0];
+      console.log(consent.consentId)
+      expect(consent.datasetHash).to.equal(datasetHash);
+      expect(consent.studyId).to.equal(studyId);
+      expect(consent.isActive).to.be.true;
+      expect(consent.consentId).to.equal(1);
+      expect(consent.validUntil).to.be.gt(0);
+      expect(consent.createdAt).to.be.gt(0);
+      expect(consent.revokedAt).to.equal(0);
+    });
+
+    it("Should return multiple consents for study with multiple patients", async function () {
+      const { consentContract, patient1, patient2, datasetHash, studyId } = await deployConsentFixture();
+      const validityDuration = 60 * 60 * 24 * 30; // 30 days
+      
+      // Register both patients
+      await consentContract.connect(patient1).registerPatient();
+      await consentContract.connect(patient2).registerPatient();
+      
+      // Grant consents from both patients
+      await consentContract.connect(patient1).selfGrantConsent(datasetHash, studyId, validityDuration);
+      await consentContract.connect(patient2).selfGrantConsent(datasetHash, studyId, validityDuration);
+      
+      const consents = await consentContract.getConsentsByStudy(studyId);
+      expect(consents.length).to.equal(2);
+      
+      // Verify both consents are for the same study
+      consents.forEach(consent => {
+        expect(consent.studyId).to.equal(studyId);
+        expect(consent.isActive).to.be.true;
+        expect(consent.datasetHash).to.equal(datasetHash);
+      });
+      
+      // Verify consents have different IDs
+      expect(consents[0].consentId).to.not.equal(consents[1].consentId);
+    });
+
+    it("Should return multiple consents from same patient for same study", async function () {
+      const { consentContract, patient1, datasetHash, studyId } = await deployWithRegisteredPatient();
+      const validityDuration = 60 * 60 * 24 * 30; // 30 days
+      
+      // Grant multiple consents from same patient
+      await consentContract.connect(patient1).selfGrantConsent(datasetHash, studyId, validityDuration);
+      await consentContract.connect(patient1).selfGrantConsent(datasetHash, studyId, validityDuration);
+      await consentContract.connect(patient1).selfGrantConsent(datasetHash, studyId, validityDuration);
+      
+      const consents = await consentContract.getConsentsByStudy(studyId);
+      expect(consents.length).to.equal(3);
+      
+      // Verify all consents are active and for the same study
+      consents.forEach(consent => {
+        expect(consent.studyId).to.equal(studyId);
+        expect(consent.isActive).to.be.true;
+        expect(consent.datasetHash).to.equal(datasetHash);
+      });
+      
+      // Verify all consents have unique IDs
+      const consentIds = consents.map(c => c.consentId.toString());
+      const uniqueIds = new Set(consentIds);
+      expect(uniqueIds.size).to.equal(3);
+    });
+
+    it("Should exclude revoked consents from results", async function () {
+      const { consentContract, patient1, patient2, datasetHash, studyId } = await deployConsentFixture();
+      const validityDuration = 60 * 60 * 24 * 30; // 30 days
+      
+      // Register both patients
+      await consentContract.connect(patient1).registerPatient();
+      await consentContract.connect(patient2).registerPatient();
+      
+      // Grant consents from both patients
+      await consentContract.connect(patient1).selfGrantConsent(datasetHash, studyId, validityDuration);
+      await consentContract.connect(patient2).selfGrantConsent(datasetHash, studyId, validityDuration);
+      
+      // Verify we have 2 active consents
+      let consents = await consentContract.getConsentsByStudy(studyId);
+      expect(consents.length).to.equal(2);
+      
+      // Revoke one consent
+      const patient1Id = await consentContract.getPatientId(patient1.address);
+      const patient1Consents = await consentContract.getPatientConsents(patient1Id);
+      const tokenToRevoke = patient1Consents[0];
+      
+      await consentContract.connect(patient1).revokeConsent(tokenToRevoke, patient1Id);
+      
+      // Verify only 1 active consent remains
+      consents = await consentContract.getConsentsByStudy(studyId);
+      expect(consents.length).to.equal(1);
+      expect(consents[0].isActive).to.be.true;
+    });
+
+    it("Should exclude expired consents from results", async function () {
+      const { consentContract, patient1, patient2, datasetHash, studyId } = await deployConsentFixture();
+      
+      // Register both patients
+      await consentContract.connect(patient1).registerPatient();
+      await consentContract.connect(patient2).registerPatient();
+      
+      // Grant one short-lived consent and one long-lived consent
+      const shortDuration = 1; // 1 second
+      const longDuration = 60 * 60 * 24 * 30; // 30 days
+      
+      await consentContract.connect(patient1).selfGrantConsent(datasetHash, studyId, shortDuration);
+      await consentContract.connect(patient2).selfGrantConsent(datasetHash, studyId, longDuration);
+      
+      // Verify we have 2 active consents initially
+      let consents = await consentContract.getConsentsByStudy(studyId);
+      expect(consents.length).to.equal(2);
+      
+      // Advance time to expire the short-lived consent
+      await ethers.provider.send("evm_increaseTime", [2]);
+      await ethers.provider.send("evm_mine", []);
+      
+      // Verify only 1 active consent remains (the non-expired one)
+      consents = await consentContract.getConsentsByStudy(studyId);
+      expect(consents.length).to.equal(1);
+      expect(consents[0].isActive).to.be.true;
+    });
+
+    it("Should filter consents by study ID correctly", async function () {
+      const { consentContract, owner, patient1, datasetHash } = await deployWithRegisteredPatient();
+      const validityDuration = 60 * 60 * 24 * 30; // 30 days
+      
+      // Create two different studies
+      const study1Id = ethers.keccak256(ethers.toUtf8Bytes("Study1"));
+      const study2Id = ethers.keccak256(ethers.toUtf8Bytes("Study2"));
+      
+      await consentContract.connect(owner).authorizeStudy(study1Id, "Study 1");
+      await consentContract.connect(owner).authorizeStudy(study2Id, "Study 2");
+      
+      // Grant consents for both studies
+      await consentContract.connect(patient1).selfGrantConsent(datasetHash, study1Id, validityDuration);
+      await consentContract.connect(patient1).selfGrantConsent(datasetHash, study1Id, validityDuration);
+      await consentContract.connect(patient1).selfGrantConsent(datasetHash, study2Id, validityDuration);
+      
+      // Verify study1 has 2 consents
+      const study1Consents = await consentContract.getConsentsByStudy(study1Id);
+      expect(study1Consents.length).to.equal(2);
+      study1Consents.forEach(consent => {
+        expect(consent.studyId).to.equal(study1Id);
+      });
+      
+      // Verify study2 has 1 consent
+      const study2Consents = await consentContract.getConsentsByStudy(study2Id);
+      expect(study2Consents.length).to.equal(1);
+      expect(study2Consents[0].studyId).to.equal(study2Id);
+    });
+
+    it("Should revert for invalid study ID", async function () {
+      const { consentContract } = await deployConsentFixture();
+      
+      // Test with zero study ID
+      await expect(consentContract.getConsentsByStudy(0))
+        .to.be.revertedWithCustomError(consentContract, "StudyNotAuthorized");
+      
+      // Test with unauthorized study ID
+      const unauthorizedStudyId = ethers.keccak256(ethers.toUtf8Bytes("UnauthorizedStudy"));
+      await expect(consentContract.getConsentsByStudy(unauthorizedStudyId))
+        .to.be.revertedWithCustomError(consentContract, "StudyNotAuthorized");
+    });
+
+    it("Should handle mixed consent states correctly", async function () {
+      const { consentContract, patient1, patient2, datasetHash, studyId } = await deployConsentFixture();
+      
+      // Register both patients
+      await consentContract.connect(patient1).registerPatient();
+      await consentContract.connect(patient2).registerPatient();
+      
+      // Grant various consents with different durations
+      const shortDuration = 1; // 1 second (will expire)
+      const longDuration = 60 * 60 * 24 * 30; // 30 days
+      
+      await consentContract.connect(patient1).selfGrantConsent(datasetHash, studyId, longDuration); // Will stay active
+      await consentContract.connect(patient1).selfGrantConsent(datasetHash, studyId, shortDuration); // Will expire
+      await consentContract.connect(patient2).selfGrantConsent(datasetHash, studyId, longDuration); // Will be revoked
+      await consentContract.connect(patient2).selfGrantConsent(datasetHash, studyId, longDuration); // Will stay active
+      
+      // Revoke one consent
+      const patient2Id = await consentContract.getPatientId(patient2.address);
+      const patient2Consents = await consentContract.getPatientConsents(patient2Id);
+      await consentContract.connect(patient2).revokeConsent(patient2Consents[0], patient2Id);
+      
+      // Advance time to expire short-lived consent
+      await ethers.provider.send("evm_increaseTime", [2]);
+      await ethers.provider.send("evm_mine", []);
+      
+      // Should only return 2 active consents (1 from patient1, 1 from patient2)
+      const consents = await consentContract.getConsentsByStudy(studyId);
+      expect(consents.length).to.equal(2);
+      
+      consents.forEach(consent => {
+        expect(consent.isActive).to.be.true;
+        expect(consent.studyId).to.equal(studyId);
+        expect(consent.revokedAt).to.equal(0);
+      });
     });
   });
 });

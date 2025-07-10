@@ -1256,7 +1256,7 @@ export const consentContractABI = [
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "consentId",
           "type": "uint256"
         },
         {
@@ -1308,6 +1308,62 @@ export const consentContractABI = [
           "internalType": "struct CercleConsent.ConsentData",
           "name": "",
           "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "studyId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getConsentsByStudy",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "consentId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "datasetHash",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint256",
+              "name": "studyId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "validUntil",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "createdAt",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "revokedAt",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "isActive",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct CercleConsent.ConsentData[]",
+          "name": "consentDetails",
+          "type": "tuple[]"
         }
       ],
       "stateMutability": "view",
@@ -1405,6 +1461,32 @@ export const consentContractABI = [
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "getTotalActiveConsents",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getTotalConsents",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
@@ -1432,7 +1514,7 @@ export const consentContractABI = [
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "tokenId",
+          "name": "consentId",
           "type": "uint256"
         },
         {
@@ -1763,19 +1845,6 @@ export const consentContractABI = [
           "internalType": "string",
           "name": "",
           "type": "string"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "totalSupply",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
         }
       ],
       "stateMutability": "view",
