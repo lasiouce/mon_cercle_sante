@@ -66,7 +66,7 @@ export default function PatientDataTable({ patientData, isLoading }: PatientData
                 <TableHead>Type de diabète</TableHead>
                 <TableHead>Étude</TableHead>
                 <TableHead>Consentement</TableHead>
-                <TableHead>Valide jusqu'à</TableHead>
+                <TableHead>Valide jusqu&apos;à</TableHead>
                 <TableHead>Mesures</TableHead>
                 <TableHead>Statut</TableHead>
               </TableRow>

@@ -31,7 +31,7 @@ export default function ConsentDataFetcher({
   const [consentIds, setConsentIds] = useState<bigint[]>([]);
 
   // Récupérer le nombre de consentements
-  const { data: consentCount } = useReadContract({
+   useReadContract({
     address: consentContractAddress,
     abi: consentContractABI,
     functionName: 'getPatientConsentCount',

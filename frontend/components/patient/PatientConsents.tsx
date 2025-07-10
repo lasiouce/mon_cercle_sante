@@ -50,7 +50,7 @@ function EmptyState() {
           <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun consentement</h3>
           <p className="text-gray-600 mb-4">
-            Vous n'avez encore accordé aucun consentement pour des études de recherche.
+            Vous n&apos;avez encore accordé aucun consentement pour des études de recherche.
           </p>
           <Button onClick={() => router.push('/patient/upload')}>
             Commencer par uploader des données
@@ -150,7 +150,7 @@ function ConsentCard({ consent, patientId, onRevoke }: {
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant={statusInfo.color as any}>
+            <Badge variant={statusInfo.color as "destructive" | "secondary" | "default"}>
               {statusInfo.status}
             </Badge>
             <RevokeConsentButton
@@ -171,7 +171,7 @@ function ConsentCard({ consent, patientId, onRevoke }: {
             <p className="text-gray-600">{formatDate(consent.createdAt)}</p>
           </div>
           <div>
-            <span className="font-medium text-gray-700">Valide jusqu'au:</span>
+            <span className="font-medium text-gray-700">Valide jusqu&apos;au:</span>
             <p className="text-gray-600">{formatDate(consent.validUntil)}</p>
           </div>
           {consent.revokedAt > 0 && (
