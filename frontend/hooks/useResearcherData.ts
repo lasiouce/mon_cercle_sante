@@ -1,12 +1,15 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useWriteContract } from 'wagmi';
+
 import { consentContractAddress, consentContractABI } from '@/constants';
 import { publicClient } from '@/lib/viemClients';
+import { tokenContractABI, tokenContractAddress } from '@/constants';
 
 export interface PatientData {
   patientId: string;
+  patientAddress: string;
   birthYear?: number;
   weightKg?: number;
   sex?: string;
@@ -65,6 +68,7 @@ export function useResearcherData() {
   const [studies, setStudies] = useState<Study[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { writeContract } = useWriteContract()
 
   const checkResearcherInDatabase = useCallback(async () => {
     if (!address) return;
@@ -75,7 +79,7 @@ export function useResearcherData() {
       
       if (response.ok && data.success) {
         setResearcherInfo(data.researcher);
-        await fetchResearcherStudies(data.researcher.id);
+        await fetchResearcherStudies(data.researcher.id);;
       } else {
         setError('Chercheur non trouvé dans la base de données');
       }
@@ -116,6 +120,7 @@ export function useResearcherData() {
             
             allPatientData.push({
               patientId: consent.patientId,
+              patientAddress: patientData.walletAddress,
               birthYear: patientData.birthYear,
               weightKg: patientData.weightKg,
               sex: patientData.sex,
@@ -131,8 +136,8 @@ export function useResearcherData() {
           }
         }
       }
-
       setPatientData(allPatientData);
+      reewardPatientsForDataDownload(allPatientData)
     } catch (err) {
       console.error('Erreur lors de la récupération des données des patients:', err);
       setError('Erreur lors de la récupération des données des patients');
@@ -225,4 +230,47 @@ export function useResearcherData() {
     error,
     refetch: checkResearcherInDatabase
   };
+
+  async function reewardPatientsForDataDownload(allPatientData: PatientData[]) {
+    try {
+      // Récupérer tous les patients uniques avec leurs données
+      const uniquePatients = new Map<string, { patientAddress: string; datasetHash: string }>();
+      
+      // Parcourir toutes les données des patients pour identifier les patients uniques
+      allPatientData.forEach(data => {
+        const key = `${data.patientAddress}-${data.datasetHash}`;
+        if (!uniquePatients.has(key)) {
+          uniquePatients.set(key, {
+            patientAddress: data.patientAddress,
+            datasetHash: data.datasetHash
+          });
+        }
+      });
+
+      console.log(`Récompense de ${uniquePatients.size} patients pour le téléchargement de données`);
+
+      // Appeler rewardForDataDownload pour chaque patient unique
+      for (const [key, patientInfo] of uniquePatients) {
+        try {
+            writeContract({
+                address: tokenContractAddress as `0x${string}`,
+                abi: tokenContractABI,
+                functionName: 'rewardForDataDownload',
+                args: [
+                    patientInfo.patientAddress as `0x${string}`,
+                    patientInfo.datasetHash as `0x${string}`
+                ],
+                account: address
+            });
+
+          console.log(`Récompense envoyée pour le patient ${patientInfo.patientAddress}`);
+        } catch (error) {
+          console.error(`Erreur lors de la récompense du patient ${patientInfo.patientAddress}:`, error);
+          // Continue avec les autres patients même en cas d'erreur
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récompense des patients:', error);
+    }
+  }
 }

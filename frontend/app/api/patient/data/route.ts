@@ -81,9 +81,10 @@ export async function GET(request: NextRequest) {
         deviceModel: measurement.deviceModel
       }));
     
-    // Préparer la réponse avec les données du patient (anonymisées)
+    // Préparer la réponse avec les données du patient
     const patientData = {
       patientId: patient.id.toString(),
+      walletAddress: patient.walletAddress, // besoin pour reeward
       // Informations supprimées pour l'anonymisation :
       // firstName, lastName, email
       birthYear: patient.birthYear,

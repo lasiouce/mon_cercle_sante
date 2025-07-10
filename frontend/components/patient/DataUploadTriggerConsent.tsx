@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, AlertCircle, Loader2, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { consentContractABI, consentContractAddress } from '@/constants';
+import { consentContractABI, consentContractAddress, tokenContractABI, tokenContractAddress } from '@/constants';
 
 interface DataUploadTriggerConsentProps {
   studyId: bigint;
@@ -80,6 +80,13 @@ export default function DataUploadTriggerConsent({
         abi: consentContractABI,
         functionName: 'selfGrantConsent',
         args: [datasetHash as `0x${string}`, studyId, BigInt(validityDuration * 24 * 60 * 60)]
+      });
+
+      writeContract({
+        address: tokenContractAddress,
+        abi: tokenContractABI,
+        functionName: 'setAuthorizedPatient',
+        args: [address as `0x${string}`, true]
       });
       
       toast.info('Transaction envoyée...');
