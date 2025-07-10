@@ -251,7 +251,7 @@ export default function MeasurementUpload() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
-            Upload de Mesures Médicales
+            Upload de mesures médicales
           </CardTitle>
           <CardDescription>
             Patient: {patientInfo.firstName} {patientInfo.lastName}
