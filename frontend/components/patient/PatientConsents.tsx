@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { FileText, CheckCircle, XCircle, Clock, ArrowLeft, RefreshCw } from 'lucide-react';
 import { usePatientId } from '@/hooks/usePatientId';
 import { usePatientConsents, type ConsentData } from '@/hooks/usePatientConsents';
+import RevokeConsentButton from './RevokeConsentButton';
 
 // Composant pour l'état de chargement
 function LoadingState() {
@@ -102,7 +103,11 @@ function ConsentStats({ consents }: { consents: ConsentData[] }) {
 }
 
 // Composant pour une carte de consentement
-function ConsentCard({ consent }: { consent: ConsentData }) {
+function ConsentCard({ consent, patientId, onRevoke }: { 
+  consent: ConsentData; 
+  patientId: bigint;
+  onRevoke: () => void;
+}) {
   const formatDate = (timestamp: bigint) => {
     return new Date(Number(timestamp) * 1000).toLocaleDateString('fr-FR', {
       year: 'numeric',
@@ -129,6 +134,7 @@ function ConsentCard({ consent }: { consent: ConsentData }) {
 
   const statusInfo = getConsentStatus(consent);
   const StatusIcon = statusInfo.icon;
+  const isExpired = isConsentExpired(consent.validUntil);
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -143,9 +149,19 @@ function ConsentCard({ consent }: { consent: ConsentData }) {
               Étude ID: {consent.studyId}
             </CardDescription>
           </div>
-          <Badge variant={statusInfo.color as any}>
-            {statusInfo.status}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant={statusInfo.color as any}>
+              {statusInfo.status}
+            </Badge>
+            <RevokeConsentButton
+              consentId={BigInt(consent.consentId)}
+              patientId={patientId}
+              isActive={consent.isActive}
+              isExpired={isExpired}
+              onRevoked={onRevoke}
+              className="ml-2"
+            />
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -244,7 +260,12 @@ export default function PatientConsents() {
             <ConsentStats consents={consents} />
             <div className="space-y-4">
               {consents.map((consent) => (
-                <ConsentCard key={consent.consentId} consent={consent} />
+                <ConsentCard 
+                  key={consent.consentId} 
+                  consent={consent} 
+                  patientId={patientId ?? BigInt(0)}
+                  onRevoke={refetch}
+                />
               ))}
             </div>
           </div>
