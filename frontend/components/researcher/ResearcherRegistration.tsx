@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useWriteContract } from 'wagmi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserPlus, Building, Mail, User } from 'lucide-react';
 import { toast } from 'sonner';
+import { tokenContractABI, tokenContractAddress } from '@/constants';
 
 interface ResearcherRegistrationProps {
   onRegistrationSuccess: () => void;
@@ -23,6 +24,8 @@ interface ResearcherFormData {
 export default function ResearcherRegistration({ onRegistrationSuccess }: ResearcherRegistrationProps) {
   const { address } = useAccount();
   const [isRegistering, setIsRegistering] = useState(false);
+  const { writeContract, isPending } = useWriteContract();
+  
   const [formData, setFormData] = useState<ResearcherFormData>({
     firstName: '',
     lastName: '',
@@ -71,8 +74,15 @@ export default function ResearcherRegistration({ onRegistrationSuccess }: Resear
       });
       
       const data = await response.json();
+    
+      writeContract({
+        address: tokenContractAddress,
+        abi: tokenContractABI,
+        functionName: 'setAuthorizedResearchers',
+        args: [address as `0x${string}`, true]
+      }); 
       
-      if (data.success) {
+      if (data.success && !isPending) {
         toast.success('Enregistrement réussi ! Bienvenue dans l\'espace chercheur.');
         onRegistrationSuccess();
       } else {

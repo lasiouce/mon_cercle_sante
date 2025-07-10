@@ -131,6 +131,16 @@ export const tokenContractABI = [
       "type": "error"
     },
     {
+      "inputs": [],
+      "name": "NotAuthorizedResearchers",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotAuthorizedUser",
+      "type": "error"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
@@ -423,6 +433,25 @@ export const tokenContractABI = [
       "inputs": [
         {
           "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "authorizedResearchers",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
           "name": "account",
           "type": "address"
         }
@@ -643,6 +672,24 @@ export const tokenContractABI = [
         }
       ],
       "name": "setAuthorizedPatient",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "addr",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "authorized",
+          "type": "bool"
+        }
+      ],
+      "name": "setAuthorizedResearchers",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

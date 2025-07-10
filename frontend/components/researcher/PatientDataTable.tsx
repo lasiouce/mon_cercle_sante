@@ -46,7 +46,7 @@ export default function PatientDataTable({ patientData, isLoading }: PatientData
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Données des Patients Consentants</CardTitle>
+        <CardTitle>Données des patients consentants</CardTitle>
         <CardDescription>
           Toutes les données des patients qui ont consenti à vos études
         </CardDescription>
