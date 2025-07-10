@@ -21,11 +21,15 @@ Le système de récompenses automatique est basé sur la limite mensuelle de 200
 
 ### Phase 1 - MVP (En cours)
 - ✅ Smart contracts Consentement et CercleToken
-- 🔄 API backend et base de données
-- 🔄 Interface utilisateur 
+- ✅ API backend et base de données
+- ✅ Interface utilisateur 
 
 
-### Phase 2 - Gamification
+### Phase 2 - Sécurité & Gamification
+
+-  Refacto système authorisations (dashboard admin ?)
+-  Sécurisé route en fonction des rôles
+-  Amélioration table pour chercheur
 - 🔮 Système de badges (Bronze, Argent, Or)
 - 🔮 Défis de régularité :
     - 12 mois consécutifs = +200 CERCLE
