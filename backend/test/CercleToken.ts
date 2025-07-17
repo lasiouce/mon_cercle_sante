@@ -47,7 +47,7 @@ describe("CercleToken", function () {
 
   describe("Deployment and basic properties", function () {
     it("Should deploy with correct initial values", async function () {
-      const { cercleToken, owner } = await deployCercleTokenFixture();
+      const { cercleToken } = await deployCercleTokenFixture();
       
       expect(await cercleToken.name()).to.equal("CercleToken");
       expect(await cercleToken.symbol()).to.equal("CERCLE");
