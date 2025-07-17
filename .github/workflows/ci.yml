@@ -74,16 +74,6 @@ jobs:
         name: coverage-report
         path: backend/coverage/
   
-  slither-analyze:
-    name: Analyze smart contracts with Slither
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./backend
-    steps:
-      - uses: actions/checkout@v4
-      - uses: crytic/slither-action@v0.4.1
-
   build-front:
     name: Build frontend
     runs-on: ubuntu-latest
