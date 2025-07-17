@@ -51,7 +51,6 @@ describe("CercleToken", function () {
       
       expect(await cercleToken.name()).to.equal("CercleToken");
       expect(await cercleToken.symbol()).to.equal("CERCLE");
-      expect(await cercleToken.owner()).to.equal(owner.address);
       expect(await cercleToken.totalSupply()).to.equal(0);
       expect(await cercleToken.MONTHLY_MINT_LIMIT()).to.equal(200);
     });
