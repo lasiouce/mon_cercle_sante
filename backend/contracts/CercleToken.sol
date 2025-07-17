@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
@@ -11,7 +10,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
  *         patients who share their medical data and enable exchange for rewards
  * @author lasiouce (https://github.com/lasiouce)
  */
-contract CercleToken is ERC20, Ownable {
+contract CercleToken is ERC20 {
     /// @notice Mapping of patient addresses authorized to receive rewards
     mapping(address => bool) public authorizedPatient;
 
@@ -118,7 +117,7 @@ contract CercleToken is ERC20, Ownable {
      * @notice Constructor for the CercleToken contract
      * @dev Initializes the ERC20 token with name "CercleToken" and symbol "CERCLE"
      */
-    constructor() ERC20("CercleToken", "CERCLE") Ownable(msg.sender) {}
+    constructor() ERC20("CercleToken", "CERCLE") {}
 
     /**
      * @notice Modifier to restrict access to authorized patients only
