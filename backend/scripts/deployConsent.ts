@@ -13,7 +13,7 @@ async function main(): Promise<void> {
 
   // Détection de l'environnement (local ou autre)
   const isLocalhost = network.name.includes("localhost");
-  const hasEtherscanKey = !!vars.get("ETHERSCAN_API_KEY");
+  const hasEtherscanKey = vars.get("ETHERSCAN_API_KEY");
 
   // Si l'environnement n'est pas localhost, attendre 5 blocs avant la vérification
   if (!isLocalhost) {
@@ -24,7 +24,7 @@ async function main(): Promise<void> {
   // Affichage de l'adresse à laquelle le contrat a été déployé
   console.log(`Contrat déployé à : ${CercleConsent.target}`);
 
-  // Si l'environnement n'est pas localhost et qu'une clé Etherscan est disponible
+  //  Si l'environnement n'est pas localhost et qu'une clé Etherscan est disponible
   if (!isLocalhost && hasEtherscanKey) {
     console.log("Vérification du contrat sur l'explorateur...");
     // Appel de la fonction de vérification avec l'adresse du contrat et les arguments
