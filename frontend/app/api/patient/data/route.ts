@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient, DatasetReference, Measurement } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
-
-// Type pour DatasetReference avec measurements inclus
-type DatasetReferenceWithMeasurements = DatasetReference & {
-  measurements: Measurement[];
-};
 
 // GET - Récupérer les données d'un patient avec ses mesures filtrées par datasetHash
 export async function GET(request: NextRequest) {
@@ -75,8 +70,8 @@ export async function GET(request: NextRequest) {
 
     // Extraire les mesures des références de dataset
     const filteredMeasurements = patient.datasetReferences
-      .flatMap((ref: DatasetReferenceWithMeasurements) => ref.measurements)
-      .map((measurement: Measurement) => ({
+      .flatMap(ref => ref.measurements)
+      .map(measurement => ({
         id: measurement.id,
         measurementType: measurement.measurementType,
         value: measurement.value,
