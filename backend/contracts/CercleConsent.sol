@@ -2,13 +2,12 @@
 pragma solidity 0.8.28;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @title CercleConsent NFT Contract
 /// @author lasiouce (https://github.com/lasiouce)  
 /// @notice This contract manages medical consent as NFTs for patients participating in medical studies
 /// @dev Implements ERC721 standard with additional functionality for consent management
-contract CercleConsent is ERC721, Ownable {
+contract CercleConsent is ERC721 {
     
     /// @notice Structure to store consent data
     /// @dev Contains all relevant information about a specific consent
@@ -20,6 +19,13 @@ contract CercleConsent is ERC721, Ownable {
         uint256 createdAt;        /// @notice Timestamp when the consent was created
         uint256 revokedAt;        /// @notice Timestamp when the consent was revoked
         bool isActive;            /// @notice Flag indicating if the consent is currently active
+    }
+
+    /// @notice Structure pour gérer efficacement les consentements par étude
+    struct StudyConsents {
+        mapping(uint256 => bool) activeConsents;  // consentId => isActive
+        uint256[] consentIds;                     // Liste des IDs pour l'itération
+        uint256 activeCount;                      // Compteur des consentements actifs
     }
 
     /// @notice Structure to store patient information
@@ -40,9 +46,7 @@ contract CercleConsent is ERC721, Ownable {
     /// @notice Maps study IDs to authorization status
     mapping(uint256 => bool) private _authorizedStudies;
     /// @notice Maps study IDs to arrays of consent IDs
-    mapping(uint256 => uint256[]) private _studyConsents;
-    /// @notice Maps study IDs to consent count for efficient counting
-    mapping(uint256 => uint256) private _studyConsentCount;
+    mapping(uint256 => StudyConsents) private _studyConsents;
     /// @notice Total number of consent tokens
     uint256 private _totalConsents;
     /// @notice Total number of active consent tokens
@@ -141,7 +145,7 @@ contract CercleConsent is ERC721, Ownable {
     }
     
     /// @notice Constructor for the CercleConsent contract
-    constructor() ERC721("CercleConsent", "CERCONSENT") Ownable(msg.sender) {}
+    constructor() ERC721("CercleConsent", "CERCONSENT") {}
     
     /// @notice Registers a new patient with a unique patient ID
     /// @dev Creates a bidirectional mapping between the patient's address and ID
@@ -226,42 +230,85 @@ contract CercleConsent is ERC721, Ownable {
             isActive: true
         });
         patients[patientId].consentIds.push(consentId);
-        _studyConsents[studyId].push(consentId);
-        _studyConsentCount[studyId]++;
+        
+        StudyConsents storage studyConsents = _studyConsents[studyId];
+        studyConsents.activeConsents[consentId] = true;
+        studyConsents.consentIds.push(consentId);
+        studyConsents.activeCount++;
+        
         _safeMint(msg.sender, consentId);
         ++ _totalConsents;
         ++ _totalActiveConsents;
         emit ConsentGranted(consentId, patientId, studyId, datasetHash, block.timestamp + validityDuration);
         return consentId;
     }
-    
-    /// @notice Allows a patient to revoke a previously granted consent
-    /// @param consentId The ID of the consent token to revoke
-    /// @param patientId The ID of the patient revoking the consent
+
     function revokeConsent(uint256 consentId, uint256 patientId) external {
         if (ownerOf(consentId) != msg.sender) revert OnlyOwnerCanRevoke();
         ConsentData storage consent = patients[patientId].consents[consentId];
         if (!consent.isActive) revert ConsentAlreadyRevoked();
+        
         consent.isActive = false;
         consent.revokedAt = block.timestamp;
-        _removeConsentFromStudy(consent.studyId, consentId);
+        
+        StudyConsents storage studyConsents = _studyConsents[consent.studyId];
+        if (studyConsents.activeConsents[consentId]) {
+            studyConsents.activeConsents[consentId] = false;
+            -- studyConsents.activeCount;
+        }
+        
         -- _totalActiveConsents;
         emit ConsentRevoked(consentId, patientId, consent.studyId, block.timestamp);
     }
 
-    /// @notice Gets all consents for a specific study
+    /// @notice Gets all active consents for a specific study (optimized version)
     /// @param studyId The ID of the study to get consents for
-    /// @return consentDetails An array of consent data for the study
+    /// @return consentDetails An array of active consent data for the study
     function getConsentsByStudy(uint256 studyId) onlyValidStudy(studyId) external view returns (
         ConsentData[] memory consentDetails
     ) {
-        uint256[] memory studyConsentIds = _studyConsents[studyId];
-        uint256 activeCount = _countActiveConsents(studyConsentIds);
-        consentDetails = new ConsentData[](activeCount);
-        _populateActiveConsents(studyConsentIds,  consentDetails);
-        return  consentDetails;
+        StudyConsents storage studyConsents = _studyConsents[studyId];
+        consentDetails = new ConsentData[](studyConsents.activeCount);
+        
+        uint256 index = 0;
+        uint256[] memory consentIds = studyConsents.consentIds;
+        
+        for (uint256 i = 0; i < consentIds.length && index < studyConsents.activeCount; i++) {
+            uint256 consentId = consentIds[i];
+            
+            if (studyConsents.activeConsents[consentId]) {
+                address owner = _ownerOf(consentId);
+                if (owner != address(0)) {
+                    uint256 patientId = addressToPatientId[owner];
+                    ConsentData memory consent = patients[patientId].consents[consentId];
+                    
+                    if (consent.isActive && block.timestamp <= consent.validUntil) {
+                        consentDetails[index] = consent;
+                        index++;
+                    }
+                }
+            }
+        }
+        
+        if (index < studyConsents.activeCount) {
+            assembly {
+                mstore(consentDetails, index)
+            }
+        }
+        
+        return consentDetails;
     }
-    
+
+    /// @notice Gets the number of active consents for a study (O(1) operation)
+    /// @param studyId The ID of the study
+    /// @return The number of active consents for the study
+    function getStudyActiveConsentCount(uint256 studyId) external view returns (uint256) {
+        return _studyConsents[studyId].activeCount;
+    }
+
+    // Supprimer la fonction _removeConsentFromStudy car elle n'est plus nécessaire
+    // Supprimer les fonctions _countActiveConsents et _populateActiveConsents
+
     /// @notice Gets all consent tokens owned by a patientId
     /// @param patientId The ID of the patient
     /// @return An array of token IDs owned by the patient
@@ -407,21 +454,4 @@ contract CercleConsent is ERC721, Ownable {
             }
         }
     }
-
-    /// @dev Supprime un consentId du tableau _studyConsents en utilisant la technique du swap
-    function _removeConsentFromStudy(uint256 studyId, uint256 consentId) internal {
-    uint256[] storage studyConsents = _studyConsents[studyId];
-    uint256 length = studyConsents.length;
-    
-    // Trouver l'index du consentId
-    for (uint256 i = 0; i < length; i++) {
-        if (studyConsents[i] == consentId) {
-            // Remplacer par le dernier élément et supprimer le dernier
-            studyConsents[i] = studyConsents[length - 1];
-            studyConsents.pop();
-            _studyConsentCount[studyId]--;
-            break;
-        }
-    }
-}
 }
