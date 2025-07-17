@@ -26,12 +26,13 @@ Le système de récompenses automatique est basé sur la limite mensuelle de 200
 
 
 ### Phase 2 - Sécurité & Gamification
-
--  Refacto système autorisation (dashboard admin ?)
--  Rôle médecin oriente patient vers étude, chercheur, labo (dashboard: nb patientel, % patientel partageant données, programme recherche avec % de participation)
--  Rôle labo, publication étude, chercheur  
--  Sécurisé route en fonction des rôles
--  Amélioration table pour chercheur
+-  Fix déploiement Vercel - add config ip Vercel pour accès bdd OVH.
+- 🔐 Ajout [ChainLink - VRF](https://docs.chain.link/vrf) pour génération code réduction patient
+- 🔐 Refacto système autorisation (dashboard admin ?)
+- 👨‍⚕️ Rôle médecin oriente patient vers étude, chercheur, labo (dashboard: nb patientel, % patientel partageant données, programme recherche avec % de participation)
+- 👨‍⚕️ Rôle labo, publication étude, chercheur  
+- 🔐 Sécurisé route en fonction des rôles
+- 👨‍⚕️Amélioration table pour chercheur
 - 🔮 Système de badges (Bronze, Argent, Or)
 - 🔮 Défis de régularité :
     - 12 mois consécutifs = +200 CERCLE
